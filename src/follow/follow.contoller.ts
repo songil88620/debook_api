@@ -28,6 +28,16 @@ export class FollowController {
     await this.followService.followOne(user.uid, followeeId);
   }
 
+  @Get('/recommend')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Your followers',
+  })
+  async getRecommend(@Query('filter') filter?: string[]) {
+    return this.followService.getRecommendFollowee(filter);
+  }
+
   @Get()
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({

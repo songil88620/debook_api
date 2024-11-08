@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -63,5 +64,18 @@ export class FollowService {
         'follower.biography',
       ])
       .getMany();
+  }
+
+  async getRecommendFollowee(filter: string[]) {
+    return await this.userRepository.find({
+      select: [
+        'firebaseId',
+        'firstName',
+        'lastName',
+        'phoneNumber',
+        'photo',
+        'biography',
+      ],
+    });
   }
 }
