@@ -45,4 +45,23 @@ export class FollowService {
       await this.repository.save(c);
     }
   }
+
+  async getAll(userid: string) {
+    return await this.repository
+      .createQueryBuilder('follow')
+      .innerJoinAndSelect('follow.follower', 'follower')
+      .where('follow.followee.firebaseId = :userid', { userid })
+      .select([
+        'follow.id',
+        'follow.status',
+        'follow.updated',
+        'follower.firebaseId',
+        'follower.firstName',
+        'follower.lastName',
+        'follower.phoneNumber',
+        'follower.photo',
+        'follower.biography',
+      ])
+      .getMany();
+  }
 }

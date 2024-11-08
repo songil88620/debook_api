@@ -1,4 +1,13 @@
-import { Controller, Post, UseGuards, Param, HttpCode } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Param,
+  HttpCode,
+  Get,
+  Query,
+} from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { FollowService } from './follow.service';
@@ -17,5 +26,15 @@ export class FollowController {
   @HttpCode(204)
   async followUser(@User() user: any, @Param('userId') followeeId: string) {
     await this.followService.followOne(user.uid, followeeId);
+  }
+
+  @Get()
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Your followers',
+  })
+  async getAllPublic(@User() user: any, @Query('filter') filter?: string[]) {
+    return this.followService.getAll(user.uid);
   }
 }

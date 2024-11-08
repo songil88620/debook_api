@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Controller,
   Get,
@@ -5,6 +6,7 @@ import {
   UseGuards,
   Param,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
@@ -94,7 +96,11 @@ export class BookController {
       example: {},
     },
   })
-  async getAllPublic(@User() user: any) {
+  async getAllPublic(
+    @User() user: any,
+    @Query('filter') filter?: string[],
+    @Query('search') search?: string,
+  ) {
     return this.bookService.getBook(10, user.uid);
   }
 
