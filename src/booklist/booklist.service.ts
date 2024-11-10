@@ -30,16 +30,17 @@ export class BooklistService {
     private collaboratorService: CollaboratorService,
   ) {}
 
-  async createOne(booklist: BooklistCreateDto, owner_id: string) {
+  async createOne(data: BooklistCreateDto, owner_id: string) {
     const new_booklist = {
       id: uuid(),
-      title: booklist?.title,
+      title: data?.title,
       owner_id,
       collaborator: uuid(),
-      book_ids: JSON.stringify(booklist?.book_ids),
+      book_ids: JSON.stringify(data?.book_ids),
     };
     const c = this.repository.create(new_booklist);
-    return await this.repository.save(c);
+    const booklist = await this.repository.save(c);
+    return { booklist };
   }
 
   async saveOne(saver_id: string, booklist_id: string) {
@@ -64,7 +65,8 @@ export class BooklistService {
     const booklist = await this.repository.findOne({ where: { id, owner_id } });
     if (booklist) {
       await this.repository.update({ id, owner_id }, data);
-      return this.repository.findOne({ where: { id, owner_id } });
+      const booklist = this.repository.findOne({ where: { id, owner_id } });
+      return { booklist };
     } else {
       throw new HttpException(
         { error: { code: 'FORBIDDEN' } },

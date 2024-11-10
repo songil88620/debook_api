@@ -27,9 +27,10 @@ export class UserService {
     });
     if (!user) {
       const c = this.userRepository.create(f_user);
-      return await this.userRepository.save(c);
+      const u = await this.userRepository.save(c);
+      return { user: u };
     } else {
-      return user;
+      return { user };
     }
   }
 
@@ -47,10 +48,14 @@ export class UserService {
   }
 
   async findUserByFirebaseId(id: string) {
-    return await this.userRepository.findOne({ where: { firebaseId: id } });
+    const user = await this.userRepository.findOne({
+      where: { firebaseId: id },
+    });
+    return { user };
   }
 
   async findUserByPhone(phoneNumber: string) {
-    return await this.userRepository.findOne({ where: { phoneNumber } });
+    const user = await this.userRepository.findOne({ where: { phoneNumber } });
+    return { user };
   }
 }

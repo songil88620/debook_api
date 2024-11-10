@@ -60,12 +60,12 @@ export class NotificationService {
   }
 
   async getMyNotification(notifiee: string) {
-    const notification = await this.repository.find({
+    const notifications = await this.repository.find({
       where: {
         notifiee: { firebaseId: notifiee },
         status: NOTI_STATUS_TYPE.PENDING,
       },
     });
-    return { notification };
+    return { notifications };
   }
 }

@@ -5,7 +5,7 @@ import { User } from 'src/user/user.decorator';
 import { BookrequestService } from './bookrequest.service';
 import { RequesterCreateDto } from './dtos';
 
-@Controller('bookrequest')
+@Controller('bookrequests')
 export class BookrequestController {
   constructor(private bookrequestService: BookrequestService) {}
 
@@ -13,7 +13,7 @@ export class BookrequestController {
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 201,
-    description: 'New book requester is created',
+    description: 'New book request is created',
   })
   @ApiResponse({
     status: 500,

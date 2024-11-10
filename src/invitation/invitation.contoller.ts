@@ -67,34 +67,12 @@ export class InvitationController {
   @ApiResponse({
     status: 200,
     description: 'The user has invited 0 or more users',
-    schema: {
-      example: {
-        invitations: [
-          {
-            id: 'f72e475d-....-....-....-e568bee612d4',
-            inviterId: 'YMWd8.......q3SbEVZDs13',
-            inviteePhoneNumber: '+9615....323',
-            status: 'accepted',
-            created: '2024-10-29T00:48:07.368Z',
-            invitee: {
-              biography: null,
-              firebaseId: 'YMWd8uk.........EVZDs14',
-              firstName: 'firstName',
-              lastName: null,
-              savedBooksCount: 0,
-            },
-            follow: null,
-            currentTime: '2024-10-29T16:19:01.015Z',
-          },
-        ],
-      },
-    },
   })
   async getInvitaion(@User() user: any) {
     return this.invitationService.getInvitations(user.uid);
   }
 
-  @Get('/rank')
+  @Get('/ranking')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 200,
@@ -110,20 +88,6 @@ export class InvitationController {
     status: 200,
     description:
       'The user has an invitation asociated to the phone number inside',
-    schema: {
-      example: {
-        invitation: {
-          id: 'f72e475d-....-.....-e568bee612d4',
-          status: 'accepted',
-          created: '2024-10-29T00:48:07.368Z',
-          inviter: {
-            firebaseId: 'YMWd8.....VZDs13',
-            firstName: 'firstName',
-            lastName: 'lastName',
-          },
-        },
-      },
-    },
   })
   async getOneInvitaion(@Param('invitationId') invitationId: string) {
     return this.invitationService.getOneInvitation(invitationId);

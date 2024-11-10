@@ -289,7 +289,7 @@ export class InvitationService {
       .orderBy('cnt', 'DESC')
       .leftJoinAndSelect('invitation.inviter', 'inviter')
       .getRawMany();
-    const res = ranking.map((r: any) => {
+    const invitationRanking = ranking.map((r: any) => {
       return {
         inviterId: r.inviterId,
         firstName: r.inviter_firstName,
@@ -300,6 +300,6 @@ export class InvitationService {
         count: r.cnt,
       };
     });
-    return res;
+    return { invitationRanking };
   }
 }

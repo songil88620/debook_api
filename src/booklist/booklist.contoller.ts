@@ -157,7 +157,7 @@ export class BooklistController {
     return this.booklistService.deleteOne(id, user.uid);
   }
 
-  @Post(':booklistid/invite_collaborators')
+  @Post(':booklistid/invite-collaborators')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 204,
@@ -179,7 +179,7 @@ export class BooklistController {
     );
   }
 
-  @Post(':booklistid/accept_collaborator')
+  @Post(':booklistid/accept-collaborator')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 204,
@@ -201,7 +201,7 @@ export class BooklistController {
     );
   }
 
-  @Post(':booklistid/add_remove_book')
+  @Post(':booklistid/add-remove-book')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 204,
@@ -219,7 +219,7 @@ export class BooklistController {
     return this.booklistService.addOrRemoveBook(user.uid, booklistid, book_id);
   }
 
-  @Post(':booklistid/save_bookist')
+  @Post(':booklistid/save')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 204,

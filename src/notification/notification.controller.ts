@@ -4,7 +4,7 @@ import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { NotificationService } from './notification.service';
 import { User } from 'src/user/user.decorator';
 
-@Controller('notification')
+@Controller('notifications')
 export class NotificationController {
   constructor(private notificationService: NotificationService) {}
 

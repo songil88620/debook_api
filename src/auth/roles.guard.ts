@@ -34,7 +34,7 @@ export class RolesGuard implements CanActivate {
     }
 
     const user = await this.userService.findUserByFirebaseId(userId);
-    if (!user || !requiredRoles.includes(user.role)) {
+    if (!user || !requiredRoles.includes(user.user.role)) {
       throw new HttpException(
         { error: { code: 'FORBIDDEN' } },
         HttpStatus.FORBIDDEN,

@@ -13,7 +13,7 @@ import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { BookService } from './book.service';
 import { User } from 'src/user/user.decorator';
 
-@Controller('book')
+@Controller('books')
 export class BookController {
   constructor(private bookService: BookService) {}
 
@@ -104,7 +104,7 @@ export class BookController {
     return this.bookService.getBook(10, user.uid);
   }
 
-  @Post(':bookid/save_book')
+  @Post(':bookid/save')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 204,

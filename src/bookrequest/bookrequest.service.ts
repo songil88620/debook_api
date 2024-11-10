@@ -15,22 +15,24 @@ export class BookrequestService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async createOne(requester_id: string, bookRequest: RequesterCreateDto) {
+  async createOne(requester_id: string, data: RequesterCreateDto) {
     const requester = await this.userRepository.findOne({
       where: { firebaseId: requester_id },
     });
     const nr = {
       id: uuid(),
-      ...bookRequest,
+      ...data,
       requester: requester,
     };
     const c = this.repository.create(nr);
-    return await this.repository.save(c);
+    const bookRequest = await this.repository.save(c);
+    return { bookRequest };
   }
 
   async getAll(requester_id: string) {
-    return await this.repository.find({
+    const bookRequest = await this.repository.find({
       where: { requester: { firebaseId: requester_id } },
     });
+    return { bookRequest };
   }
 }

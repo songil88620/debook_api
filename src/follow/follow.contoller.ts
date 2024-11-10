@@ -13,7 +13,7 @@ import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { FollowService } from './follow.service';
 import { User } from 'src/user/user.decorator';
 
-@Controller('follow')
+@Controller('follows')
 export class FollowController {
   constructor(private followService: FollowService) {}
 
@@ -28,11 +28,11 @@ export class FollowController {
     await this.followService.followOne(user.uid, followeeId);
   }
 
-  @Get('/recommend')
+  @Get('/recommended')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 200,
-    description: 'Your followers',
+    description: 'Your recommend followee',
   })
   async getRecommend(@Query('filter') filter?: string[]) {
     return this.followService.getRecommendFollowee(filter);

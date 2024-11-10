@@ -48,7 +48,7 @@ export class FollowService {
   }
 
   async getAll(userid: string) {
-    return await this.repository
+    const follows = await this.repository
       .createQueryBuilder('follow')
       .innerJoinAndSelect('follow.follower', 'follower')
       .where('follow.followee.firebaseId = :userid', { userid })
@@ -64,10 +64,11 @@ export class FollowService {
         'follower.biography',
       ])
       .getMany();
+    return { follows };
   }
 
   async getRecommendFollowee(filter: string[]) {
-    return await this.userRepository.find({
+    const recommendFollowee = await this.userRepository.find({
       select: [
         'firebaseId',
         'firstName',
@@ -77,5 +78,6 @@ export class FollowService {
         'biography',
       ],
     });
+    return { recommendFollowee };
   }
 }
