@@ -35,8 +35,8 @@ export class UserEntity {
   @Column({ default: 0 })
   followersCount: number;
 
-  @Column({ default: 0 })
-  invitationId: number;
+  @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
+  invitationId: string;
 
   @Column({ default: 0 })
   invitationsRemainingCount: number;
