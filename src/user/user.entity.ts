@@ -6,6 +6,7 @@ import { BookrequestEntity } from 'src/bookrequest/bookrequest.entity';
 import { CollaboratorEntity } from 'src/collaborator/collaborator.entity';
 import { FollowEntity } from 'src/follow/follow.entity';
 import { InvitationEntity } from 'src/invitation/invitation.entity';
+import { LineEntity } from 'src/line/line.entity';
 import { NotificationEntity } from 'src/notification/notification.entity';
 import {
   Entity,
@@ -110,6 +111,10 @@ export class UserEntity {
   @JoinTable()
   @OneToMany(() => AchievementEntity, (achiever) => achiever.achiever)
   achiever: AchievementEntity[];
+
+  @JoinTable()
+  @OneToMany(() => LineEntity, (liner) => liner.liner)
+  liner: LineEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

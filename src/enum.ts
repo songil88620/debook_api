@@ -25,3 +25,8 @@ export enum ACHIEVE_TYPE {
   BOOKLIST = 'booklist',
   FOLLOW = 'follow',
 }
+
+export enum LINE_TYPE {
+  VIDEO = 'video',
+  TEXT = 'text',
+}

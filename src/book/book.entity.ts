@@ -1,6 +1,7 @@
 import { AuthorEntity } from 'src/author/author.entity';
 import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { EditionEntity } from 'src/edition/edition.entity';
+import { LineEntity } from 'src/line/line.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -57,6 +58,10 @@ export class BookEntity {
   @ManyToMany(() => AuthorEntity, (author) => author.book)
   @JoinTable()
   authors: AuthorEntity[];
+
+  @ManyToMany(() => LineEntity, (lines) => lines.book)
+  @JoinTable()
+  lines: LineEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

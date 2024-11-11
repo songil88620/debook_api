@@ -14,6 +14,13 @@ export class AchievementService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
+  async getMyAchievement(user_id: string) {
+    const achievements = await this.repository.find({
+      where: { achiever: { firebaseId: user_id } },
+    });
+    return { achievements };
+  }
+
   // call this when one achievement is done
   async achieveOne(user_id: string, type: ACHIEVE_TYPE) {
     const achievement = await this.repository.findOne({
