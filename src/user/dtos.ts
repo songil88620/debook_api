@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsNumber,
-  IsArray,
   IsBoolean,
   Length,
 } from 'class-validator';
@@ -35,9 +34,8 @@ export class UserDto {
   followersCount: number;
 
   @ApiProperty({ description: 'invitationId' })
-  @IsArray()
-  @IsNotEmpty()
-  invitationId: number;
+  @IsString()
+  invitationId: string;
 
   @ApiProperty({ description: 'invitationsRemainingCount' })
   @IsNumber()
