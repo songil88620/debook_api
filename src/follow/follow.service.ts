@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FollowEntity } from './follow.entity';
 import { FollowCreateDto } from './dtos';
 import { UserEntity } from 'src/user/user.entity';
+import { AchievementService } from 'src/achievement/achievement.service';
+import { ACHIEVE_TYPE } from 'src/enum';
 
 @Injectable()
 export class FollowService {
@@ -13,6 +15,8 @@ export class FollowService {
     private repository: Repository<FollowEntity>,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+    @Inject(forwardRef(() => AchievementService))
+    private achievementService: AchievementService,
   ) {}
 
   async followOne(followerId: string, followeeId: string) {
@@ -44,6 +48,8 @@ export class FollowService {
       };
       const c = this.repository.create(new_follow);
       await this.repository.save(c);
+      // record the achievement
+      this.achievementService.achieveOne(followeeId, ACHIEVE_TYPE.FOLLOW);
     }
   }
 

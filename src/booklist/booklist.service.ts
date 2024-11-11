@@ -11,10 +11,10 @@ import { BooklistEntity } from './booklist.entity';
 import { BooklistCreateDto, BooklistUpdateDto } from './dtos';
 import { uuid } from 'uuidv4';
 import { CollaboratorService } from 'src/collaborator/collaborator.service';
-import { BookService } from 'src/book/book.service';
 import { BookEntity } from 'src/book/book.entity';
 import { UserEntity } from 'src/user/user.entity';
-import { STATUS_TYPE } from 'src/enum';
+import { ACHIEVE_TYPE, STATUS_TYPE } from 'src/enum';
+import { AchievementService } from 'src/achievement/achievement.service';
 
 @Injectable()
 export class BooklistService {
@@ -25,9 +25,10 @@ export class BooklistService {
     private bookrepository: Repository<BookEntity>,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-    @Inject(forwardRef(() => BookService)) private bookService: BookService,
     @Inject(forwardRef(() => CollaboratorService))
     private collaboratorService: CollaboratorService,
+    @Inject(forwardRef(() => AchievementService))
+    private achievementService: AchievementService,
   ) {}
 
   async createOne(data: BooklistCreateDto, owner_id: string) {
@@ -40,6 +41,8 @@ export class BooklistService {
     };
     const c = this.repository.create(new_booklist);
     const booklist = await this.repository.save(c);
+    // record the achievement
+    this.achievementService.achieveOne(owner_id, ACHIEVE_TYPE.BOOKLIST);
     return { booklist };
   }
 

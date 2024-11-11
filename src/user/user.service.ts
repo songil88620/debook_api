@@ -38,7 +38,10 @@ export class UserService {
   async update(id: string, user: any) {
     try {
       await this.userRepository.update({ firebaseId: id }, user);
-      return await this.userRepository.findOne({ where: { firebaseId: id } });
+      const u = await this.userRepository.findOne({
+        where: { firebaseId: id },
+      });
+      return { user: u };
     } catch (e) {
       throw new HttpException(
         { error: { code: 'FORBIDDEN' } },

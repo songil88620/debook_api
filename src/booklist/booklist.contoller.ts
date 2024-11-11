@@ -8,17 +8,32 @@ import {
   Param,
   Delete,
   HttpCode,
+  Optional,
+  UploadedFile,
+  FileTypeValidator,
+  ParseFilePipe,
+  UseInterceptors,
+  forwardRef,
+  Inject,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/user/dtos';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { BooklistCreateDto, BooklistUpdateDto } from './dtos';
 import { BooklistService } from './booklist.service';
 import { User } from 'src/user/user.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadService } from 'src/upload/upload.service';
 
 @Controller('booklist')
 export class BooklistController {
-  constructor(private booklistService: BooklistService) {}
+  constructor(
+    private booklistService: BooklistService,
+    @Inject(forwardRef(() => UploadService))
+    private uploadService: UploadService,
+  ) {}
 
   @Post()
   @UseGuards(FirebaseAuthGuard)
@@ -47,6 +62,7 @@ export class BooklistController {
 
   @Patch(':id')
   @UseGuards(FirebaseAuthGuard)
+  @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 201,
     description: 'The user has created successfully',
@@ -65,12 +81,46 @@ export class BooklistController {
       },
     },
   })
+  @UseInterceptors(FileInterceptor('photo'))
   async updateBookList(
+    @Optional()
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          // new MaxFileSizeValidator({ maxSize: 5000 }),
+          new FileTypeValidator({ fileType: /image\/(jpeg|png)/ }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    file: Express.Multer.File | undefined,
     @User() user: any,
     @Body() data: BooklistUpdateDto,
     @Param('id') id: string,
   ) {
-    return this.booklistService.updateOne(id, user.uid, data);
+    try {
+      if (file) {
+        const res = await this.uploadService.saveFileOnS3(
+          file,
+          'avatar',
+          user.uid,
+        );
+        if (res.status) {
+          data.image = res.file_url;
+        } else {
+          throw new HttpException(
+            { error: { code: 'FORBIDDEN' } },
+            HttpStatus.FORBIDDEN,
+          );
+        }
+      }
+      return this.booklistService.updateOne(id, user.uid, data);
+    } catch (e) {
+      throw new HttpException(
+        { error: { code: 'FORBIDDEN' } },
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 
   @Get()

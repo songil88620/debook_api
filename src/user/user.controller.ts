@@ -135,7 +135,7 @@ export class UserController {
     },
   })
   @UseInterceptors(FileInterceptor('photo'))
-  async update(
+  async updateUser(
     @Optional()
     @UploadedFile(
       new ParseFilePipe({

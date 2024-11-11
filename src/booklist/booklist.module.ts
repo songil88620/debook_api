@@ -9,6 +9,8 @@ import { BookModule } from 'src/book/book.module';
 import { BookEntity } from 'src/book/book.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { CollaboratorEntity } from 'src/collaborator/collaborator.entity';
+import { UploadModule } from 'src/upload/upload.module';
+import { AchievementModule } from 'src/achievement/achievement.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { CollaboratorEntity } from 'src/collaborator/collaborator.entity';
     forwardRef(() => AuthModule),
     forwardRef(() => CollaboratorModule),
     forwardRef(() => BookModule),
+    forwardRef(() => UploadModule),
+    forwardRef(() => AchievementModule),
   ],
   controllers: [BooklistController],
   providers: [BooklistService],

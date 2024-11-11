@@ -48,7 +48,7 @@ export class BookService {
       if (book) {
         const is_author = await this.authorService.checkAuthor(bookid, userid);
         if (is_author || book.public) {
-          return book;
+          return { book };
         } else {
           throw new HttpException(
             { error: { code: 'FORBIDDEN' } },
