@@ -59,8 +59,7 @@ export class BookEntity {
   @JoinTable()
   authors: AuthorEntity[];
 
-  @ManyToMany(() => LineEntity, (lines) => lines.book)
-  @JoinTable()
+  @OneToMany(() => LineEntity, (lines) => lines.book)
   lines: LineEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })

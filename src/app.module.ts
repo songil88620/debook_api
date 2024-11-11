@@ -33,6 +33,8 @@ import { AuthorEntity } from './author/author.entity';
 import { AuthorModule } from './author/author.module';
 import { BookrequestEntity } from './bookrequest/bookrequest.entity';
 import { BookrequestModule } from './bookrequest/bookrequest.module';
+import { LineEntity } from './line/line.entity';
+import { LineModule } from './line/line.module';
 
 @Module({
   imports: [
@@ -54,6 +56,7 @@ import { BookrequestModule } from './bookrequest/bookrequest.module';
         NotificationEntity,
         AuthorEntity,
         BookrequestEntity,
+        LineEntity,
       ],
       username: process.env.DB_USER,
       password: process.env.DB_PW,
@@ -80,6 +83,7 @@ import { BookrequestModule } from './bookrequest/bookrequest.module';
     NotificationModule,
     AuthorModule,
     BookrequestModule,
+    LineModule,
   ],
   controllers: [AppController],
   providers: [
