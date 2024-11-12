@@ -33,10 +33,6 @@ export class UserDto {
   @IsNotEmpty()
   followersCount: number;
 
-  @ApiProperty({ description: 'invitationId' })
-  @IsString()
-  invitationId: string;
-
   @ApiProperty({ description: 'invitationsRemainingCount' })
   @IsNumber()
   @IsNotEmpty()

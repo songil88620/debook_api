@@ -17,6 +17,8 @@ import {
   ManyToMany,
   JoinTable,
   OneToMany,
+  JoinColumn,
+  OneToOne,
 } from 'typeorm';
 
 @Entity('user')
@@ -36,8 +38,12 @@ export class UserEntity {
   @Column({ default: 0 })
   followersCount: number;
 
-  @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
-  invitationId: string;
+  @OneToOne(() => InvitationEntity, (invitaion) => invitaion.user, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinColumn()
+  invitationId: InvitationEntity | null;
 
   @Column({ default: 0 })
   invitationsRemainingCount: number;

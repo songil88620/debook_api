@@ -194,6 +194,11 @@ export class InvitationService {
           { status: STATUS_TYPE.DECLINED },
         );
 
+        await this.userRepository.update(
+          { firebaseId: inviteeId },
+          { invitationId: iv },
+        );
+
         //TODO do something to notify for inviter
 
         throw new HttpException(

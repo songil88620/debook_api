@@ -73,6 +73,8 @@ export class AuthService {
 
       const id_token = response.data.id_token;
       return id_token;
-    } catch (e) {}
+    } catch (e) {
+      console.log('>>', e.message);
+    }
   }
 }

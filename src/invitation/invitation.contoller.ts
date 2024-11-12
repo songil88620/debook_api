@@ -68,7 +68,7 @@ export class InvitationController {
     status: 200,
     description: 'The user has invited 0 or more users',
   })
-  async getInvitaion(@User() user: any) {
+  async getInvitation(@User() user: any) {
     return this.invitationService.getInvitations(user.uid);
   }
 
@@ -78,7 +78,7 @@ export class InvitationController {
     status: 200,
     description: 'The user has invited 0 or more users',
   })
-  async getInvitaionRank() {
+  async getInvitationRank() {
     return await this.invitationService.getInvitationRank();
   }
 
@@ -127,7 +127,48 @@ export class InvitationController {
     @User() user: any,
     @Param('invitationId') invitationId: string,
   ) {
-    return await this.invitationService.acceptInvitationById(
+    await this.invitationService.acceptInvitationById(
+      invitationId,
+      user.uid,
+      user.phone_number,
+    );
+  }
+
+  @Post(':invitationId/decline')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 204,
+    description: 'The invitation was successfully accepted',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'The user access token is invalid or not present',
+    schema: {
+      example: {
+        error: {
+          code: 'INVITATION_EXPIRED',
+          data: null,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'The invitation does not exist',
+    schema: {
+      example: {
+        error: {
+          code: 'NOT_FOUND',
+          data: null,
+        },
+      },
+    },
+  })
+  async declineInvitation(
+    @User() user: any,
+    @Param('invitationId') invitationId: string,
+  ) {
+    await this.invitationService.acceptInvitationById(
       invitationId,
       user.uid,
       user.phone_number,
