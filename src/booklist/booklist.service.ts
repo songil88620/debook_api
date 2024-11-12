@@ -15,6 +15,7 @@ import { BookEntity } from 'src/book/book.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { ACHIEVE_TYPE, STATUS_TYPE } from 'src/enum';
 import { AchievementService } from 'src/achievement/achievement.service';
+import { UploadService } from 'src/upload/upload.service';
 
 @Injectable()
 export class BooklistService {
@@ -29,6 +30,8 @@ export class BooklistService {
     private collaboratorService: CollaboratorService,
     @Inject(forwardRef(() => AchievementService))
     private achievementService: AchievementService,
+    @Inject(forwardRef(() => UploadService))
+    private uploadService: UploadService,
   ) {}
 
   async createOne(data: BooklistCreateDto, owner_id: string) {
@@ -66,6 +69,10 @@ export class BooklistService {
 
   async updateOne(id: string, owner_id: string, data: BooklistUpdateDto) {
     const booklist = await this.repository.findOne({ where: { id, owner_id } });
+    if (booklist.image != null && booklist.image != data.image) {
+      // remove old image on S3
+      this.uploadService.deleteFileOnS3(booklist.image);
+    }
     if (booklist) {
       await this.repository.update({ id, owner_id }, data);
       const booklist = this.repository.findOne({ where: { id, owner_id } });

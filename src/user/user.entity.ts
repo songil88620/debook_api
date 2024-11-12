@@ -60,7 +60,7 @@ export class UserEntity {
   @Column({ type: 'varchar', default: '', length: 100 })
   phoneNumber: string;
 
-  @Column({ type: 'varchar', default: '', length: 150 })
+  @Column({ type: 'varchar', nullable: true, default: null, length: 200 })
   photo: string;
 
   @Column({ type: 'varchar', default: 'user', length: 10 })

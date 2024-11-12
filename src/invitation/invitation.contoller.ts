@@ -138,7 +138,7 @@ export class InvitationController {
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 204,
-    description: 'The invitation was successfully accepted',
+    description: 'The invitation was successfully declined',
   })
   @ApiResponse({
     status: 400,
@@ -168,7 +168,7 @@ export class InvitationController {
     @User() user: any,
     @Param('invitationId') invitationId: string,
   ) {
-    await this.invitationService.acceptInvitationById(
+    await this.invitationService.declineInvitationById(
       invitationId,
       user.uid,
       user.phone_number,

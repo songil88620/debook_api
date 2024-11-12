@@ -100,10 +100,11 @@ export class BooklistController {
   ) {
     try {
       if (file) {
+        const file_name = id + '.' + Date.now();
         const res = await this.uploadService.saveFileOnS3(
           file,
-          'avatar',
-          user.uid,
+          'booklist',
+          file_name,
         );
         if (res.status) {
           data.image = res.file_url;

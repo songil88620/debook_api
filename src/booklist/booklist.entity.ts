@@ -23,7 +23,7 @@ export class BooklistEntity {
   @Column({ type: 'text', default: null, nullable: true })
   summary: string;
 
-  @Column({ type: 'text', default: null, nullable: true })
+  @Column({ type: 'varchar', nullable: true, default: null, length: 200 })
   image: string;
 
   @Column({ type: 'varchar', length: 36 })

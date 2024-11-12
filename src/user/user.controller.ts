@@ -160,7 +160,12 @@ export class UserController {
         );
       }
       if (file) {
-        const res = await this.uploadService.saveFileOnS3(file, 'avatar', uid);
+        const file_name = uid + '.' + Date.now();
+        const res = await this.uploadService.saveFileOnS3(
+          file,
+          'avatar',
+          file_name,
+        );
         if (res.status) {
           updateUserDto.photo = res.file_url;
         } else {

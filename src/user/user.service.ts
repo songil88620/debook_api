@@ -10,6 +10,7 @@ import { UserEntity } from './user.entity';
 import { Repository } from 'typeorm';
 import { UserCreateDto } from './dtos';
 import { InvitationService } from 'src/invitation/invitation.service';
+import { UploadService } from 'src/upload/upload.service';
 
 @Injectable()
 export class UserService {
@@ -18,6 +19,8 @@ export class UserService {
     private userRepository: Repository<UserEntity>,
     @Inject(forwardRef(() => InvitationService))
     private invitationService: InvitationService,
+    @Inject(forwardRef(() => UploadService))
+    private uploadService: UploadService,
   ) {}
 
   // called when user register or user login to the app
@@ -37,6 +40,14 @@ export class UserService {
   // update user profile data
   async update(id: string, user: any) {
     try {
+      const old_user = await this.userRepository.findOne({
+        where: { firebaseId: id },
+      });
+      const old_photo = old_user.photo;
+      if (old_photo != null && old_photo != user.photo) {
+        // remove old photo file on S3
+        this.uploadService.deleteFileOnS3(old_photo);
+      }
       await this.userRepository.update({ firebaseId: id }, user);
       const u = await this.userRepository.findOne({
         where: { firebaseId: id },

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InvitationEntity } from './invitation.entity';
 import { UserDto } from 'src/user/dtos';
 import { uuid } from 'uuidv4';
@@ -41,13 +41,26 @@ export class InvitationService {
   }
 
   async sendInvitation(uid: string, phone: string) {
-    let invite_status = STATUS_TYPE.PENDING;
-
     // A user with influencer role will have unlimited invitations
     // A user can not invite another user without invitations available.
     const user: UserDto = await this.userRepository.findOne({
       where: { firebaseId: uid },
     });
+
+    // user can't send invitation by himself
+    if (user.phoneNumber == phone) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'YOU_CAN_NOT_INVITE_YOURSELF',
+            data: null,
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // check user's remaining invitation count
     if (user.invitationsRemainingCount == 0 && user.role == 'user') {
       throw new HttpException(
         {
@@ -77,26 +90,6 @@ export class InvitationService {
       );
     }
 
-    // A user who is using app and already invited cannot be invited again
-    const alreay_in_user = await this.userRepository.findOne({
-      where: { phoneNumber: phone },
-    });
-    if (alreay_in_user && accepted_invitation) {
-      throw new HttpException(
-        {
-          error: {
-            code: 'PHONE_NUMBER_ALREADY_INVITED',
-            data: null,
-          },
-        },
-        HttpStatus.CONFLICT,
-      );
-    }
-    // A user who is using app and wasn't invited before can be invited immediatelly and accepted status
-    if (alreay_in_user && accepted_invitation == null) {
-      invite_status = STATUS_TYPE.ACCEPTED;
-    }
-
     const invitation_msg = `${user?.firstName} ${user?.lastName} has invited you to Debook`;
     const tw_res = await this.sendInvitionViaPhone(phone, invitation_msg);
     if (tw_res) {
@@ -115,7 +108,7 @@ export class InvitationService {
         inviter: inviter,
         invitee: null,
         inviteePhoneNumber: phone,
-        status: invite_status,
+        status: STATUS_TYPE.PENDING,
       };
       const c = this.repository.create(new_invitation);
       return await this.repository.save(c);
@@ -136,13 +129,30 @@ export class InvitationService {
   async getInvitations(uid: string) {
     try {
       const currentTime = new Date();
-      const invitaions = await this.repository.find({
-        where: {
-          inviter: { firebaseId: uid },
-          status: In(['accepted', 'pending']),
-        },
-        relations: ['invitee'],
-      });
+      const invitaions = await this.repository
+        .createQueryBuilder('invitation')
+        .leftJoinAndSelect('invitation.inviter', 'inviter')
+        .leftJoinAndSelect('invitation.inviter', 'invitee')
+        .select([
+          'invitation.id',
+          'invitation.inviteePhoneNumber',
+          'invitation.status',
+          'invitation.created',
+          'invitation.updated',
+          'inviter.firebaseId',
+          'inviter.firstName',
+          'inviter.lastName',
+          'inviter.photo',
+          'invitee.firebaseId',
+          'invitee.firstName',
+          'invitee.lastName',
+          'invitee.photo',
+        ])
+        .where('inviter.firebaseId = :uid', { uid })
+        .andWhere('invitation.status IN (:...statuses)', {
+          statuses: [STATUS_TYPE.ACCEPTED, STATUS_TYPE.PENDING],
+        })
+        .getMany();
       const ivs = invitaions.map((invitation) => ({
         ...invitation,
         currentTime,
@@ -167,6 +177,7 @@ export class InvitationService {
         'inviter.firebaseId',
         'inviter.firstName',
         'inviter.lastName',
+        'inviter.photo',
       ])
       .getOne();
     return { invitation: { ...invitation, currentTime } };
@@ -199,6 +210,53 @@ export class InvitationService {
           { invitationId: iv },
         );
 
+        //TODO do something to notify for inviter
+
+        throw new HttpException(
+          { message: 'The invitation was successfully accepted' },
+          HttpStatus.NO_CONTENT,
+        );
+      } else {
+        throw new HttpException(
+          {
+            error: {
+              code: 'INVITATION_EXPIRED',
+              data: null,
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } else {
+      throw new HttpException(
+        {
+          error: {
+            code: 'NOT_FOUND',
+            data: null,
+          },
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  async declineInvitationById(
+    id: string,
+    inviteeId: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    phoneNumber: string,
+  ) {
+    const iv = await this.repository.findOne({
+      where: { id, status: STATUS_TYPE.PENDING },
+    });
+    if (iv) {
+      const expirationTime = addHours(iv.created, 48);
+      const isExpired = isBefore(expirationTime, new Date());
+      if (!isExpired) {
+        await this.repository.update(
+          { id },
+          { invitee: { firebaseId: inviteeId }, status: STATUS_TYPE.DECLINED },
+        );
         //TODO do something to notify for inviter
 
         throw new HttpException(

@@ -44,6 +44,7 @@ import { LineModule } from './line/line.module';
       host: process.env.DB_HOST,
       port: 3306,
       database: 'debook_db',
+      timezone: 'Z',
       entities: [
         UserEntity,
         InvitationEntity,

@@ -46,4 +46,25 @@ export class UploadService {
       };
     }
   }
+
+  async deleteFileOnS3(fileUrl: string) {
+    const { bucketName, key } = this.getBucketAndKeyFromUrl(fileUrl);
+    try {
+      await this.s3
+        .deleteObject({
+          Bucket: bucketName,
+          Key: key,
+        })
+        .promise();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  getBucketAndKeyFromUrl(url: string) {
+    const urlObj = new URL(url);
+    const bucketName = urlObj.host.split('.')[0];
+    const key = decodeURIComponent(urlObj.pathname.substring(1));
+    return { bucketName, key };
+  }
 }
