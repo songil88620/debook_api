@@ -6,7 +6,8 @@ import { FollowEntity } from './follow.entity';
 import { FollowCreateDto } from './dtos';
 import { UserEntity } from 'src/user/user.entity';
 import { AchievementService } from 'src/achievement/achievement.service';
-import { ACHIEVE_TYPE } from 'src/enum';
+import { ACHIEVE_TYPE, NOTI_MESSAGES, NOTI_TYPE } from 'src/enum';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class FollowService {
@@ -17,6 +18,8 @@ export class FollowService {
     private userRepository: Repository<UserEntity>,
     @Inject(forwardRef(() => AchievementService))
     private achievementService: AchievementService,
+    @Inject(forwardRef(() => NotificationService))
+    private notificationService: NotificationService,
   ) {}
 
   async followOne(followerId: string, followeeId: string) {
@@ -50,6 +53,17 @@ export class FollowService {
       await this.repository.save(c);
       // record the achievement
       this.achievementService.achieveOne(followeeId, ACHIEVE_TYPE.FOLLOW);
+      // notify to the followee
+      this.notificationService.createNotification(
+        followerId,
+        followeeId,
+        NOTI_TYPE.FOLLOW,
+        NOTI_MESSAGES.FOLLOW_BY +
+          follower.firstName +
+          ' ' +
+          follower.lastName +
+          '.',
+      );
     }
   }
 

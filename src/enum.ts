@@ -3,13 +3,14 @@ export enum NOTI_TYPE {
   FOLLOW = 'follow',
   COMMENT = 'comment',
   LIKE = 'like',
+  INVITATION = 'invitation',
 }
 
 export enum STATUS_TYPE {
   PENDING = 'pending',
   ACCEPTED = 'accepted',
   REJECTED = 'rejected',
-  DECLINED = 'decliend',
+  DECLINED = 'declined',
   EXPIRED = 'expired',
 }
 
@@ -29,4 +30,10 @@ export enum ACHIEVE_TYPE {
 export enum LINE_TYPE {
   VIDEO = 'video',
   TEXT = 'text',
+}
+
+export enum NOTI_MESSAGES {
+  INVITATION_ACCEPTED = 'Your invitation is accepted.',
+  INVITATION_DECLINED = 'Your invitation is decliend.',
+  FOLLOW_BY = 'You are followed by ',
 }

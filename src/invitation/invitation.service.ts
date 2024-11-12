@@ -1,6 +1,12 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { InvitationEntity } from './invitation.entity';
 import { UserDto } from 'src/user/dtos';
 import { uuid } from 'uuidv4';
@@ -8,7 +14,8 @@ import { InvitaionDto } from './dtos';
 import { UserEntity } from 'src/user/user.entity';
 import { addHours, isBefore } from 'date-fns';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { STATUS_TYPE } from 'src/enum';
+import { NOTI_MESSAGES, NOTI_TYPE, STATUS_TYPE } from 'src/enum';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class InvitationService {
@@ -20,6 +27,8 @@ export class InvitationService {
     private repository: Repository<InvitationEntity>,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+    @Inject(forwardRef(() => NotificationService))
+    private notificationService: NotificationService,
   ) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -90,8 +99,8 @@ export class InvitationService {
       );
     }
 
-    const invitation_msg = `${user?.firstName} ${user?.lastName} has invited you to Debook`;
-    const tw_res = await this.sendInvitionViaPhone(phone, invitation_msg);
+    const msg = `${user?.firstName} ${user?.lastName} has invited you to Debook`;
+    const tw_res = await this.sendSMSviaPhone(phone, msg);
     if (tw_res) {
       // When sending an invitation, it should be subtracted from the count in the user table
       if (user.role == 'user') {
@@ -201,7 +210,11 @@ export class InvitationService {
         );
         // A user can only accept one invitation at a time. As soon as one invitation is accepted, the rest will be declined
         await this.repository.update(
-          { inviteePhoneNumber: phoneNumber, status: STATUS_TYPE.PENDING },
+          {
+            inviteePhoneNumber: phoneNumber,
+            status: STATUS_TYPE.PENDING,
+            id: Not(id),
+          },
           { status: STATUS_TYPE.DECLINED },
         );
 
@@ -210,7 +223,32 @@ export class InvitationService {
           { invitationId: iv },
         );
 
-        //TODO do something to notify for inviter
+        // notify to the accepted user
+        this.notificationService.createNotification(
+          iv.invitee.firebaseId,
+          inviteeId,
+          NOTI_TYPE.INVITATION,
+          NOTI_MESSAGES.INVITATION_ACCEPTED,
+        );
+
+        // notify to the declined user
+        const declinee = await this.repository.find({
+          where: {
+            inviteePhoneNumber: phoneNumber,
+            status: STATUS_TYPE.DECLINED,
+          },
+        });
+
+        declinee.forEach((d: any) => {
+          const notifier = iv.inviter.firebaseId;
+          const notifiee = d.invitee.firebaseId;
+          this.notificationService.createNotification(
+            notifier,
+            notifiee,
+            NOTI_TYPE.INVITATION,
+            NOTI_MESSAGES.INVITATION_DECLINED,
+          );
+        });
 
         throw new HttpException(
           { message: 'The invitation was successfully accepted' },
@@ -257,7 +295,14 @@ export class InvitationService {
           { id },
           { invitee: { firebaseId: inviteeId }, status: STATUS_TYPE.DECLINED },
         );
-        //TODO do something to notify for inviter
+
+        // notify to the declined user
+        this.notificationService.createNotification(
+          iv.inviter.firebaseId,
+          inviteeId,
+          NOTI_TYPE.INVITATION,
+          NOTI_MESSAGES.INVITATION_DECLINED,
+        );
 
         throw new HttpException(
           { message: 'The invitation was successfully accepted' },
@@ -306,10 +351,10 @@ export class InvitationService {
   }
 
   // send invitation via twillo api
-  async sendInvitionViaPhone(phoneNumber: string, invitation_msg: string) {
+  async sendSMSviaPhone(phoneNumber: string, msg: string) {
     try {
       await this.twilioClient.messages.create({
-        body: invitation_msg,
+        body: msg,
         from: this.twilioPhoneNumber,
         to: phoneNumber,
       });

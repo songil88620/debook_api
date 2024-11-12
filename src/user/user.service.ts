@@ -62,9 +62,14 @@ export class UserService {
   }
 
   async findUserByFirebaseId(id: string) {
-    const user = await this.userRepository.findOne({
+    const u = await this.userRepository.findOne({
       where: { firebaseId: id },
+      relations: ['invitationId'],
     });
+    const user = {
+      ...u,
+      invitationId: u.invitationId.id,
+    };
     return { user };
   }
 

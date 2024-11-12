@@ -6,12 +6,14 @@ import { FollowService } from './follow.service';
 import { FollowController } from './follow.contoller';
 import { UserEntity } from 'src/user/user.entity';
 import { AchievementModule } from 'src/achievement/achievement.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([FollowEntity, UserEntity]),
     forwardRef(() => AuthModule),
     forwardRef(() => AchievementModule),
+    forwardRef(() => NotificationModule),
   ],
   controllers: [FollowController],
   providers: [FollowService],

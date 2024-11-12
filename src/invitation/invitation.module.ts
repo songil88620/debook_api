@@ -6,12 +6,14 @@ import { InvitationEntity } from './invitation.entity';
 import { InvitationService } from './invitation.service';
 import { InvitationController } from './invitation.contoller';
 import { UserEntity } from 'src/user/user.entity';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([InvitationEntity, UserEntity]),
     forwardRef(() => AuthModule),
     forwardRef(() => UploadModule),
+    forwardRef(() => NotificationModule),
   ],
   controllers: [InvitationController],
   providers: [InvitationService],
