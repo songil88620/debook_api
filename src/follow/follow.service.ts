@@ -54,15 +54,12 @@ export class FollowService {
       // record the achievement
       this.achievementService.achieveOne(followeeId, ACHIEVE_TYPE.FOLLOW);
       // notify to the followee
+      const follower_name = follower.firstName + ' ' + follower.lastName;
       this.notificationService.createNotification(
         followerId,
         followeeId,
         NOTI_TYPE.FOLLOW,
-        NOTI_MESSAGES.FOLLOW_BY +
-          follower.firstName +
-          ' ' +
-          follower.lastName +
-          '.',
+        NOTI_MESSAGES.FOLLOW_BY.replace('$NAME', follower_name),
       );
     }
   }

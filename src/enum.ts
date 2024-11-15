@@ -4,6 +4,7 @@ export enum NOTI_TYPE {
   COMMENT = 'comment',
   LIKE = 'like',
   INVITATION = 'invitation',
+  COLLABORATOR = 'collaborator',
 }
 
 export enum STATUS_TYPE {
@@ -34,6 +35,9 @@ export enum LINE_TYPE {
 
 export enum NOTI_MESSAGES {
   INVITATION_ACCEPTED = 'Your invitation is accepted.',
-  INVITATION_DECLINED = 'Your invitation is decliend.',
-  FOLLOW_BY = 'You are followed by ',
+  INVITATION_DECLINED = 'Your invitation is declined.',
+  FOLLOW_BY = 'You are followed by $NAME.',
+  INVITE_BOOKLIST_COLLABORATOR = '$NAME invited you as a collaborator for a boollist #$BOOKLIST.',
+  ACCEPT_BOOKLIST_COLLABORATOR = '$NAME is accepted your collaborator invitation.',
+  REJECT_BOOKLIST_COLLABORATOR = '$NAME is rejected your collaborator invitation.',
 }

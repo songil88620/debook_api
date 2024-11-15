@@ -85,6 +85,12 @@ import { LineModule } from './line/line.module';
     AuthorModule,
     BookrequestModule,
     LineModule,
+    TypeOrmModule.forFeature([
+      UserEntity,
+      BookEntity,
+      BooklistEntity,
+      AuthorEntity,
+    ]),
   ],
   controllers: [AppController],
   providers: [
