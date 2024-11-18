@@ -17,6 +17,7 @@ import {
   Inject,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/user/dtos';
@@ -155,8 +156,13 @@ export class BooklistController {
       },
     },
   })
-  async getBookListForMe(@User() user: any) {
-    return this.booklistService.getList(user.uid);
+  async getBookListForMe(
+    @User() user: any,
+    @Query('title') title?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.booklistService.getList(user.uid, title, page, limit);
   }
 
   @Get(':id')

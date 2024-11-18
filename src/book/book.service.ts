@@ -27,17 +27,37 @@ export class BookService {
 
   async onModuleInit() {}
 
-  async getBook(limit: number, saver_id: string) {
-    const books = await this.repository.find({
-      where: { public: true },
-      take: limit,
-      order: { created: 'DESC' },
-    });
+  async getBooks(
+    saver_id: string,
+    title: string = '',
+    author: string = '',
+    page: number = 1,
+    limit: number = 20,
+  ) {
+    const [books, total] = await this.repository
+      .createQueryBuilder('books')
+      .leftJoinAndSelect('books.authors', 'authors')
+      .leftJoinAndSelect('authors.user', 'user')
+      .where('books.title LIKE :title', { title: `%${title}%` })
+      .andWhere("CONCAT(user.firstName, ' ', user.lastName) LIKE :author", {
+        author: `%${author}%`,
+      })
+      .take(limit)
+      .skip((page - 1) * limit)
+      .orderBy('books.updated', 'DESC')
+      .getManyAndCount();
+
     const user_sbook = await this.userRepository.findOne({
       where: { firebaseId: saver_id },
       relations: ['savedBook'],
     });
-    return { books, saved_books: user_sbook.savedBook };
+
+    const pagination = {
+      page,
+      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+      limit,
+    };
+    return { books, saved_books: user_sbook.savedBook, pagination };
   }
 
   async getOne(userid: string, bookid: string) {

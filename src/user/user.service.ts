@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
@@ -62,15 +63,24 @@ export class UserService {
   }
 
   async findUserByFirebaseId(id: string) {
-    const u = await this.userRepository.findOne({
-      where: { firebaseId: id },
-      relations: ['invitationId'],
+    const user = await this.userRepository.findOne({
+      relations: ['invitation'],
+      where: {
+        firebaseId: id,
+      },
     });
-    const user = {
-      ...u,
-      invitationId: u.invitationId.id,
+
+    if (!user) {
+      throw new NotFoundException({
+        error: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+
+    return {
+      user,
     };
-    return { user };
   }
 
   async findUserByPhone(phoneNumber: string) {

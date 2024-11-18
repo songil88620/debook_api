@@ -8,7 +8,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 
-@Entity('edition')
+@Entity('editions')
 export class EditionEntity {
   @PrimaryGeneratedColumn()
   id: number;

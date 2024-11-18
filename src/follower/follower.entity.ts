@@ -1,4 +1,3 @@
-import { BookEntity } from 'src/book/book.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -9,19 +8,19 @@ import {
   ManyToOne,
 } from 'typeorm';
 
-@Entity('authors')
-export class AuthorEntity {
+@Entity('followers')
+export class FollowEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => BookEntity, (book) => book.authors, { onDelete: 'CASCADE' })
-  book: BookEntity;
+  @ManyToOne(() => UserEntity, (user) => user.follower, { onDelete: 'CASCADE' })
+  follower: UserEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.authors, { onDelete: 'CASCADE' })
-  user: UserEntity;
+  @ManyToOne(() => UserEntity, (user) => user.followee, { onDelete: 'CASCADE' })
+  followee: UserEntity;
 
   @Column({ default: false })
-  verified: boolean;
+  status: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

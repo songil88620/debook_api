@@ -9,7 +9,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 
-@Entity('notification')
+@Entity('notifications')
 export class NotificationEntity {
   @PrimaryGeneratedColumn()
   id: number;

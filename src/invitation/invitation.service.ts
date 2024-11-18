@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   HttpException,
   HttpStatus,
@@ -14,7 +15,7 @@ import { InvitaionDto } from './dtos';
 import { UserEntity } from 'src/user/user.entity';
 import { addHours, isBefore } from 'date-fns';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { NOTI_MESSAGES, NOTI_TYPE, STATUS_TYPE } from 'src/enum';
+import { NOTI_MESSAGES, NOTI_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
 import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
@@ -85,7 +86,10 @@ export class InvitationService {
     // A user can be invited by more than one person.
     // If the user has already accepted an invitation, he can not be invited again
     const accepted_invitation = await this.repository.findOne({
-      where: { inviteePhoneNumber: phone, status: STATUS_TYPE.ACCEPTED },
+      where: {
+        inviteePhoneNumber: phone,
+        status: INVITATION_STATUS_TYPE.ACCEPTED,
+      },
     });
     if (accepted_invitation) {
       throw new HttpException(
@@ -117,7 +121,7 @@ export class InvitationService {
         inviter: inviter,
         invitee: null,
         inviteePhoneNumber: phone,
-        status: STATUS_TYPE.PENDING,
+        status: INVITATION_STATUS_TYPE.PENDING,
       };
       const c = this.repository.create(new_invitation);
       return await this.repository.save(c);
@@ -138,16 +142,16 @@ export class InvitationService {
   async getInvitations(uid: string) {
     try {
       const currentTime = new Date();
-      const invitaions = await this.repository
-        .createQueryBuilder('invitation')
-        .leftJoinAndSelect('invitation.inviter', 'inviter')
-        .leftJoinAndSelect('invitation.inviter', 'invitee')
+      const invitations = await this.repository
+        .createQueryBuilder('invitations')
+        .leftJoinAndSelect('invitations.inviter', 'inviter')
+        .leftJoinAndSelect('invitations.inviter', 'invitee')
         .select([
-          'invitation.id',
-          'invitation.inviteePhoneNumber',
-          'invitation.status',
-          'invitation.created',
-          'invitation.updated',
+          'invitations.id',
+          'invitations.inviteePhoneNumber',
+          'invitations.status',
+          'invitations.created',
+          'invitations.updated',
           'inviter.firebaseId',
           'inviter.firstName',
           'inviter.lastName',
@@ -158,11 +162,14 @@ export class InvitationService {
           'invitee.photo',
         ])
         .where('inviter.firebaseId = :uid', { uid })
-        .andWhere('invitation.status IN (:...statuses)', {
-          statuses: [STATUS_TYPE.ACCEPTED, STATUS_TYPE.PENDING],
+        .andWhere('invitations.status IN (:...statuses)', {
+          statuses: [
+            INVITATION_STATUS_TYPE.ACCEPTED,
+            INVITATION_STATUS_TYPE.PENDING,
+          ],
         })
         .getMany();
-      const ivs = invitaions.map((invitation) => ({
+      const ivs = invitations.map((invitation) => ({
         ...invitation,
         currentTime,
       }));
@@ -172,110 +179,126 @@ export class InvitationService {
     }
   }
 
+  async getInvitationsByPhoneNumber(phoneNumber: string) {
+    return {
+      invitations: await this.repository
+        .createQueryBuilder('invitations')
+        .leftJoinAndSelect('invitations.inviter', 'inviter')
+        .where('invitations.inviteePhoneNumber = :phoneNumber', { phoneNumber })
+        .andWhere('invitations.status = :status', {
+          status: INVITATION_STATUS_TYPE.PENDING,
+        })
+        .select([
+          'invitations',
+          'inviter.firstName',
+          'inviter.lastName',
+          'inviter.photo',
+        ])
+        .getMany(),
+    };
+  }
+
   // get one invitaion by using id
   async getOneInvitation(invitationId: string) {
     const currentTime = new Date();
+
     const invitation = await this.repository
-      .createQueryBuilder('invitation')
-      .leftJoinAndSelect('invitation.inviter', 'inviter')
-      .where('invitation.id = :id', { id: invitationId })
+      .createQueryBuilder('invitations')
+      .leftJoinAndSelect('invitations.inviter', 'inviter')
+      .where('invitations.id = :id', { id: invitationId })
       .select([
-        'invitation.id',
-        'invitation.status',
-        'invitation.created',
-        'inviter.firebaseId',
+        'invitations.id',
+        'invitations.status',
+        'invitations.created',
         'inviter.firstName',
         'inviter.lastName',
         'inviter.photo',
       ])
       .getOne();
-    return { invitation: { ...invitation, currentTime } };
+
+    return {
+      invitation: {
+        ...invitation,
+        currentTime,
+      },
+    };
   }
 
   async acceptInvitationById(
-    id: string,
-    inviteeId: string,
+    invitationId: string,
+    userId: string,
     phoneNumber: string,
   ) {
-    const iv = await this.repository.findOne({
-      where: { id, status: STATUS_TYPE.PENDING },
+    const invitation = await this.repository.preload({
+      id: invitationId,
+      status: INVITATION_STATUS_TYPE.PENDING,
     });
-    if (iv) {
-      const expirationTime = addHours(iv.created, 48);
-      const isExpired = isBefore(expirationTime, new Date());
-      if (!isExpired) {
-        await this.repository.update(
-          { id },
-          { invitee: { firebaseId: inviteeId }, status: STATUS_TYPE.ACCEPTED },
-        );
-        // A user can only accept one invitation at a time. As soon as one invitation is accepted, the rest will be declined
-        await this.repository.update(
-          {
-            inviteePhoneNumber: phoneNumber,
-            status: STATUS_TYPE.PENDING,
-            id: Not(id),
-          },
-          { status: STATUS_TYPE.DECLINED },
-        );
 
-        await this.userRepository.update(
-          { firebaseId: inviteeId },
-          { invitationId: iv },
-        );
-
-        // notify to the accepted user
-        this.notificationService.createNotification(
-          iv.invitee.firebaseId,
-          inviteeId,
-          NOTI_TYPE.INVITATION,
-          NOTI_MESSAGES.INVITATION_ACCEPTED,
-        );
-
-        // notify to the declined user
-        const declinee = await this.repository.find({
-          where: {
-            inviteePhoneNumber: phoneNumber,
-            status: STATUS_TYPE.DECLINED,
-          },
-        });
-
-        declinee.forEach((d: any) => {
-          const notifier = iv.inviter.firebaseId;
-          const notifiee = d.invitee.firebaseId;
-          this.notificationService.createNotification(
-            notifier,
-            notifiee,
-            NOTI_TYPE.INVITATION,
-            NOTI_MESSAGES.INVITATION_DECLINED,
-          );
-        });
-
-        throw new HttpException(
-          { message: 'The invitation was successfully accepted' },
-          HttpStatus.NO_CONTENT,
-        );
-      } else {
-        throw new HttpException(
-          {
-            error: {
-              code: 'INVITATION_EXPIRED',
-              data: null,
-            },
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-    } else {
-      throw new HttpException(
-        {
-          error: {
-            code: 'NOT_FOUND',
-            data: null,
-          },
+    if (!invitation) {
+      throw new BadRequestException({
+        error: {
+          code: 'NOT_FOUND',
+          data: null,
         },
-        HttpStatus.NOT_FOUND,
-      );
+      });
     }
+
+    const expirationTime = addHours(invitation.created, 48);
+    const isExpired = isBefore(expirationTime, new Date());
+
+    if (isExpired) {
+      throw new BadRequestException({
+        error: {
+          code: 'INVITATION_EXPIRED',
+          data: null,
+        },
+      });
+    }
+
+    invitation.status = INVITATION_STATUS_TYPE.ACCEPTED;
+    await this.repository.save(invitation);
+
+    // A user can only accept one invitation at a time. As soon as one invitation is accepted, the rest will be declined
+    await this.repository.update(
+      {
+        inviteePhoneNumber: phoneNumber,
+        status: INVITATION_STATUS_TYPE.PENDING,
+        id: Not(invitationId),
+      },
+      { status: INVITATION_STATUS_TYPE.DECLINED },
+    );
+
+    await this.userRepository.update(
+      { firebaseId: userId },
+      { invitation: invitation },
+    );
+
+    // // notify to the accepted user
+    // this.notificationService.createNotification(
+    //   invitation.invitee.firebaseId,
+    //   userId,
+    //   NOTI_TYPE.INVITATION,
+    //   NOTI_MESSAGES.INVITATION_ACCEPTED,
+    // );
+
+    // // notify to the declined user
+    // const declinee = await this.repository.find({
+    //   where: {
+    //     inviteePhoneNumber: phoneNumber,
+    //     status: INVITATION_STATUS_TYPE.DECLINED,
+    //   },
+    // });
+
+    // declinee.forEach((d: any) => {
+    //   const notifier = invitation.inviter.firebaseId;
+    //   const notifiee = d.invitee.firebaseId;
+    //   this.notificationService.createNotification(
+    //     notifier,
+    //     notifiee,
+    //     NOTI_TYPE.INVITATION,
+    //     NOTI_MESSAGES.INVITATION_DECLINED,
+    //   );
+    // });
   }
 
   async declineInvitationById(
@@ -285,7 +308,7 @@ export class InvitationService {
     phoneNumber: string,
   ) {
     const iv = await this.repository.findOne({
-      where: { id, status: STATUS_TYPE.PENDING },
+      where: { id, status: INVITATION_STATUS_TYPE.PENDING },
     });
     if (iv) {
       const expirationTime = addHours(iv.created, 48);
@@ -293,7 +316,10 @@ export class InvitationService {
       if (!isExpired) {
         await this.repository.update(
           { id },
-          { invitee: { firebaseId: inviteeId }, status: STATUS_TYPE.DECLINED },
+          {
+            invitee: { firebaseId: inviteeId },
+            status: INVITATION_STATUS_TYPE.DECLINED,
+          },
         );
 
         // notify to the declined user
@@ -337,7 +363,7 @@ export class InvitationService {
     inviteeId: string,
   ) {
     const invited = await this.repository.findOne({
-      where: { inviteePhoneNumber, status: STATUS_TYPE.PENDING },
+      where: { inviteePhoneNumber, status: INVITATION_STATUS_TYPE.PENDING },
     });
     if (invited) {
       const invitee = await this.userRepository.findOne({
@@ -345,7 +371,7 @@ export class InvitationService {
       });
       await this.repository.update(
         { inviteePhoneNumber },
-        { invitee, status: STATUS_TYPE.ACCEPTED },
+        { invitee, status: INVITATION_STATUS_TYPE.ACCEPTED },
       );
     }
   }
@@ -369,7 +395,7 @@ export class InvitationService {
       where: {
         inviter: { firebaseId: follower },
         invitee: { firebaseId: followee },
-        status: STATUS_TYPE.ACCEPTED,
+        status: INVITATION_STATUS_TYPE.ACCEPTED,
       },
     });
   }
@@ -379,9 +405,9 @@ export class InvitationService {
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
     await this.repository
-      .createQueryBuilder('invitation')
+      .createQueryBuilder('invitations')
       .update()
-      .set({ status: STATUS_TYPE.EXPIRED })
+      .set({ status: INVITATION_STATUS_TYPE.EXPIRED })
       .where('status = :status', { status: 'pending' })
       .andWhere('created < :twoDaysAgo', { twoDaysAgo })
       .execute();
@@ -390,12 +416,12 @@ export class InvitationService {
   // get invitation ranking
   async getInvitationRank() {
     const ranking = await this.repository
-      .createQueryBuilder('invitation')
-      .select('invitation.inviter.firebaseId', 'inviterId')
-      .addSelect('COUNT(invitation.inviter.firebaseId)', 'cnt')
-      .groupBy('invitation.inviter.firebaseId')
+      .createQueryBuilder('invitations')
+      .select('invitations.inviter.firebaseId', 'inviterId')
+      .addSelect('COUNT(invitations.inviter.firebaseId)', 'cnt')
+      .groupBy('invitations.inviter.firebaseId')
       .orderBy('cnt', 'DESC')
-      .leftJoinAndSelect('invitation.inviter', 'inviter')
+      .leftJoinAndSelect('invitations.inviter', 'inviter')
       .getRawMany();
     const invitationRanking = ranking.map((r: any) => {
       return {

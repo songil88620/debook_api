@@ -17,8 +17,8 @@ import { InvitationEntity } from './invitation/invitation.entity';
 import { AchievementEntity } from './achievement/achievement.entity';
 import { AchievementModule } from './achievement/achievement.module';
 import { InvitationModule } from './invitation/invitation.module';
-import { FollowEntity } from './follow/follow.entity';
-import { FollowModule } from './follow/follow.module';
+import { FollowEntity } from './follower/follower.entity';
+import { FollowModule } from './follower/follower.module';
 import { EditionEntity } from './edition/edition.entity';
 import { BookEntity } from './book/book.entity';
 import { BooklistEntity } from './booklist/booklist.entity';
@@ -35,6 +35,7 @@ import { BookrequestEntity } from './bookrequest/bookrequest.entity';
 import { BookrequestModule } from './bookrequest/bookrequest.module';
 import { LineEntity } from './line/line.entity';
 import { LineModule } from './line/line.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -66,12 +67,6 @@ import { LineModule } from './line/line.module';
     ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60,
-        limit: 60,
-      },
-    ]),
     PassportModule,
     UploadModule,
     AchievementModule,
@@ -85,11 +80,12 @@ import { LineModule } from './line/line.module';
     AuthorModule,
     BookrequestModule,
     LineModule,
-    TypeOrmModule.forFeature([
-      UserEntity,
-      BookEntity,
-      BooklistEntity,
-      AuthorEntity,
+    SearchModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 60,
+      },
     ]),
   ],
   controllers: [AppController],

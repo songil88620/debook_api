@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { CollaboratorEntity } from './collaborator.entity';
 import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { UserEntity } from 'src/user/user.entity';
-import { NOTI_MESSAGES, NOTI_TYPE, STATUS_TYPE } from 'src/enum';
+import { NOTI_MESSAGES, NOTI_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
 import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
@@ -74,7 +74,11 @@ export class CollaboratorService {
     if (cl) {
       await this.repository.update(
         { id: cl.id },
-        { status: status ? STATUS_TYPE.ACCEPTED : STATUS_TYPE.REJECTED },
+        {
+          status: status
+            ? INVITATION_STATUS_TYPE.ACCEPTED
+            : INVITATION_STATUS_TYPE.REJECTED,
+        },
       );
       const booklist = await this.booklistRepository.findOne({
         where: { id: booklist_id },
@@ -107,7 +111,7 @@ export class CollaboratorService {
   async checkCollaboratorStatus(
     cid: string,
     collaborator_id: string,
-    status: STATUS_TYPE,
+    status: INVITATION_STATUS_TYPE,
   ) {
     const c = await this.repository.findOne({
       where: {
@@ -118,4 +122,12 @@ export class CollaboratorService {
     });
     return c ? true : false;
   }
+
+  // eslint-disable-next-line prettier/prettier, @typescript-eslint/no-unused-vars
+  async getCollaborators(
+    userid: string,
+    name: string,
+    page: number,
+    limit: number,
+  ) {}
 }

@@ -99,9 +99,12 @@ export class BookController {
   async getAllPublic(
     @User() user: any,
     @Query('filter') filter?: string[],
-    @Query('search') search?: string,
+    @Query('title') title?: string,
+    @Query('author') author?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
-    return this.bookService.getBook(10, user.uid);
+    return this.bookService.getBooks(user.uid, title, author, page, limit);
   }
 
   @Post(':bookid/save')

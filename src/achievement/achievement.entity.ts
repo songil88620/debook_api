@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity('achievement')
+@Entity('achievements')
 export class AchievementEntity {
   @PrimaryGeneratedColumn()
   id: number;

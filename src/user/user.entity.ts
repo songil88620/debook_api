@@ -4,7 +4,7 @@ import { BookEntity } from 'src/book/book.entity';
 import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { BookrequestEntity } from 'src/bookrequest/bookrequest.entity';
 import { CollaboratorEntity } from 'src/collaborator/collaborator.entity';
-import { FollowEntity } from 'src/follow/follow.entity';
+import { FollowEntity } from 'src/follower/follower.entity';
 import { InvitationEntity } from 'src/invitation/invitation.entity';
 import { LineEntity } from 'src/line/line.entity';
 import { NotificationEntity } from 'src/notification/notification.entity';
@@ -21,7 +21,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-@Entity('user')
+@Entity('users')
 export class UserEntity {
   @PrimaryColumn({ type: 'varchar', unique: true, length: 36 })
   firebaseId: string;
@@ -38,12 +38,12 @@ export class UserEntity {
   @Column({ default: 0 })
   followersCount: number;
 
-  @OneToOne(() => InvitationEntity, (invitaion) => invitaion.user, {
+  @OneToOne(() => InvitationEntity, (invitation) => invitation.user, {
     nullable: true,
     cascade: true,
   })
   @JoinColumn()
-  invitationId: InvitationEntity | null;
+  invitation: InvitationEntity | null;
 
   @Column({ default: 0 })
   invitationsRemainingCount: number;

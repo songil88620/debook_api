@@ -6,14 +6,14 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { BooklistEntity } from './booklist.entity';
 import { BooklistCreateDto, BooklistUpdateDto } from './dtos';
 import { uuid } from 'uuidv4';
 import { CollaboratorService } from 'src/collaborator/collaborator.service';
 import { BookEntity } from 'src/book/book.entity';
 import { UserEntity } from 'src/user/user.entity';
-import { ACHIEVE_TYPE, STATUS_TYPE } from 'src/enum';
+import { ACHIEVE_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
 import { AchievementService } from 'src/achievement/achievement.service';
 import { UploadService } from 'src/upload/upload.service';
 
@@ -85,13 +85,26 @@ export class BooklistService {
     }
   }
 
-  async getList(uid: string) {
-    const booklist = await this.repository.find({ where: { owner_id: uid } });
+  async getList(uid: string, title: string, page: number, limit: number) {
+    const [booklist, total] = await this.repository.findAndCount({
+      where: { owner_id: uid, title: Like(`%${title}%`) },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+    const pagination = {
+      page,
+      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+      limit,
+    };
     const user_sbooklist = await this.userRepository.findOne({
       where: { firebaseId: uid },
       relations: ['savedBooklists'],
     });
-    return { booklist, saved_booklist: user_sbooklist.savedBooklists };
+    return {
+      booklist,
+      pagination,
+      saved_booklist: user_sbooklist.savedBooklists,
+    };
   }
 
   async getOne(id: string, requester_id: string) {
@@ -111,7 +124,7 @@ export class BooklistService {
           const cs = await this.collaboratorService.checkCollaboratorStatus(
             booklist.id,
             requester_id,
-            STATUS_TYPE.ACCEPTED,
+            INVITATION_STATUS_TYPE.ACCEPTED,
           );
           if (cs) {
             // if this requester is a collaborator of this list, return result

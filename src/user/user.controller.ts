@@ -60,6 +60,17 @@ export class UserController {
       },
     },
   })
+  @ApiResponse({
+    status: 404,
+    description: 'The user does not exists',
+    schema: {
+      example: {
+        error: {
+          code: 'NOT_FOUND',
+        },
+      },
+    },
+  })
   async me(@User() user: any) {
     return await this.userService.findUserByFirebaseId(user.uid);
   }

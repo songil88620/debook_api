@@ -7,9 +7,9 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-import { STATUS_TYPE } from 'src/enum';
+import { INVITATION_STATUS_TYPE } from 'src/enum';
 
-@Entity('bookrequest')
+@Entity('bookrequests')
 export class BookrequestEntity {
   @PrimaryColumn({ type: 'varchar', unique: true, length: 36 })
   id: string;
@@ -31,8 +31,12 @@ export class BookrequestEntity {
   })
   requester?: UserEntity;
 
-  @Column({ type: 'enum', enum: STATUS_TYPE, default: STATUS_TYPE.PENDING })
-  status: STATUS_TYPE;
+  @Column({
+    type: 'enum',
+    enum: INVITATION_STATUS_TYPE,
+    default: INVITATION_STATUS_TYPE.PENDING,
+  })
+  status: INVITATION_STATUS_TYPE;
 
   @CreateDateColumn({ type: 'timestamp' })
   created?: Date;

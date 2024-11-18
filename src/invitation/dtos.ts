@@ -1,7 +1,7 @@
 import { IsString, IsNotEmpty, IsPhoneNumber, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserEntity } from 'src/user/user.entity';
-import { STATUS_TYPE } from 'src/enum';
+import { INVITATION_STATUS_TYPE } from 'src/enum';
 
 export class InvitationCreateDto {
   @ApiProperty({ description: 'phoneNumber' })
@@ -31,7 +31,7 @@ export class InvitaionDto {
   @IsPhoneNumber()
   inviteePhoneNumber: string;
 
-  @ApiProperty({ description: 'status', enum: STATUS_TYPE })
-  @IsEnum(STATUS_TYPE)
-  status: STATUS_TYPE;
+  @ApiProperty({ description: 'status', enum: INVITATION_STATUS_TYPE })
+  @IsEnum(INVITATION_STATUS_TYPE)
+  status: INVITATION_STATUS_TYPE;
 }

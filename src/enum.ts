@@ -7,7 +7,7 @@ export enum NOTI_TYPE {
   COLLABORATOR = 'collaborator',
 }
 
-export enum STATUS_TYPE {
+export enum INVITATION_STATUS_TYPE {
   PENDING = 'pending',
   ACCEPTED = 'accepted',
   REJECTED = 'rejected',

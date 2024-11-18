@@ -1,4 +1,4 @@
-import { STATUS_TYPE } from 'src/enum';
+import { INVITATION_STATUS_TYPE } from 'src/enum';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -10,7 +10,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-@Entity('invitation')
+@Entity('invitations')
 export class InvitationEntity {
   @PrimaryColumn({ type: 'varchar', unique: true, length: 36 })
   id: string;
@@ -27,10 +27,14 @@ export class InvitationEntity {
   @Column({ type: 'varchar', length: 100 })
   inviteePhoneNumber: string;
 
-  @Column({ type: 'enum', enum: STATUS_TYPE, default: STATUS_TYPE.PENDING })
-  status: STATUS_TYPE;
+  @Column({
+    type: 'enum',
+    enum: INVITATION_STATUS_TYPE,
+    default: INVITATION_STATUS_TYPE.PENDING,
+  })
+  status: INVITATION_STATUS_TYPE;
 
-  @OneToOne(() => UserEntity, (user) => user.invitationId)
+  @OneToOne(() => UserEntity, (user) => user.invitation)
   user: UserEntity;
 
   @CreateDateColumn({ type: 'timestamp' })

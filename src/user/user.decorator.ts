@@ -6,3 +6,7 @@ export const User = createParamDecorator(
     return request.user;
   },
 );
+
+export const Tester = createParamDecorator(() => {
+  return { uid: 'YMWd8ukOfbVe7jrrwq3SbEVZDs13' };
+});

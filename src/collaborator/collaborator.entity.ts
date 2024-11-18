@@ -1,5 +1,5 @@
 import { BooklistEntity } from 'src/booklist/booklist.entity';
-import { STATUS_TYPE } from 'src/enum';
+import { INVITATION_STATUS_TYPE } from 'src/enum';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -10,7 +10,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 
-@Entity('collaborator')
+@Entity('collaborators')
 export class CollaboratorEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -25,8 +25,12 @@ export class CollaboratorEntity {
   })
   user: UserEntity;
 
-  @Column({ type: 'enum', enum: STATUS_TYPE, default: STATUS_TYPE.PENDING })
-  status: STATUS_TYPE;
+  @Column({
+    type: 'enum',
+    enum: INVITATION_STATUS_TYPE,
+    default: INVITATION_STATUS_TYPE.PENDING,
+  })
+  status: INVITATION_STATUS_TYPE;
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

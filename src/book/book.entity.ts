@@ -14,7 +14,7 @@ import {
   JoinTable,
 } from 'typeorm';
 
-@Entity('book')
+@Entity('books')
 export class BookEntity {
   @PrimaryColumn({ type: 'varchar', unique: true, length: 36 })
   id: string;
