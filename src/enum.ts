@@ -49,3 +49,9 @@ export enum LIKE_TYPE {
   BOOKLIST = 'booklist',
   LINE = 'line',
 }
+
+export enum ONBOARDING_STATUS {
+  INIT = 'in',
+  BOOKLIST_COMPLETED = 'bc',
+  FOLLOWERS_FINISHED = 'ff',
+}

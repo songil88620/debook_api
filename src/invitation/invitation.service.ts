@@ -258,20 +258,46 @@ export class InvitationService {
     invitation.status = INVITATION_STATUS_TYPE.ACCEPTED;
     await this.repository.save(invitation);
 
-    // A user can only accept one invitation at a time. As soon as one invitation is accepted, the rest will be declined
-    await this.repository.update(
-      {
-        inviteePhoneNumber: phoneNumber,
-        status: INVITATION_STATUS_TYPE.PENDING,
-        id: Not(invitationId),
-      },
-      { status: INVITATION_STATUS_TYPE.DECLINED },
-    );
+    const [, , accepted_invitation] = await Promise.all([
+      // A user can only accept one invitation at a time. As soon as one invitation is accepted, the rest will be declined
+      this.repository.update(
+        {
+          inviteePhoneNumber: phoneNumber,
+          status: INVITATION_STATUS_TYPE.PENDING,
+          id: Not(invitationId),
+        },
+        { status: INVITATION_STATUS_TYPE.DECLINED },
+      ),
 
-    await this.userRepository.update(
-      { firebaseId: userId },
-      { invitation: invitation },
-    );
+      this.userRepository.update(
+        { firebaseId: userId },
+        { invitation: invitation },
+      ),
+
+      this.repository.findOne({
+        where: { id: invitation.id },
+        relations: ['inviter'],
+        select: {
+          id: true,
+          created: true,
+          updated: true,
+          status: true,
+          inviter: {
+            firebaseId: true,
+            photo: true,
+            phoneNumber: true,
+            firstName: true,
+            lastName: true,
+            username: true,
+            biography: true,
+          },
+        },
+      }),
+    ]);
+
+    return { acceptedInvitation: accepted_invitation };
+
+    // TODO later
 
     // // notify to the accepted user
     // this.notificationService.createNotification(

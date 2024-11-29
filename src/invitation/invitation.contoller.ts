@@ -6,8 +6,6 @@ import {
   UseGuards,
   Param,
   Query,
-  HttpStatus,
-  HttpCode,
 } from '@nestjs/common';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
@@ -109,11 +107,10 @@ export class InvitationController {
     return this.invitationService.getOneInvitation(invitationId);
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Post(':invitationId/accept')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
-    status: 204,
+    status: 201,
     description: 'The invitation was successfully accepted',
   })
   @ApiResponse({
@@ -144,7 +141,7 @@ export class InvitationController {
     @User() user: any,
     @Param('invitationId') invitationId: string,
   ) {
-    await this.invitationService.acceptInvitationById(
+    return await this.invitationService.acceptInvitationById(
       invitationId,
       user.uid,
       user.phone_number,

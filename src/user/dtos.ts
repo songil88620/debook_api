@@ -6,8 +6,10 @@ import {
   IsNumber,
   IsBoolean,
   Length,
+  IsEnum,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { ONBOARDING_STATUS } from 'src/enum';
 
 export class UserDto {
   @ApiProperty({ description: 'biography' })
@@ -144,4 +146,9 @@ export class UserUpdateDto {
       'backgroundColor must be hex value and exactly 7~9 characters long',
   })
   backgroundColor?: string;
+
+  @ApiProperty({ description: 'onboardingStatus' })
+  @IsEnum(ONBOARDING_STATUS)
+  @IsOptional()
+  onboardingStatus?: ONBOARDING_STATUS;
 }

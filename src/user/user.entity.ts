@@ -4,6 +4,7 @@ import { BookEntity } from 'src/book/book.entity';
 import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { BookrequestEntity } from 'src/bookrequest/bookrequest.entity';
 import { CollaboratorEntity } from 'src/collaborator/collaborator.entity';
+import { ONBOARDING_STATUS } from 'src/enum';
 import { FollowEntity } from 'src/follower/follower.entity';
 import { InvitationEntity } from 'src/invitation/invitation.entity';
 import { LikeEntity } from 'src/like/like.entity';
@@ -79,6 +80,13 @@ export class UserEntity {
 
   @Column({ default: false })
   emailVerified: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: ONBOARDING_STATUS,
+    default: ONBOARDING_STATUS.INIT,
+  })
+  onboardingStatus: ONBOARDING_STATUS;
 
   @Column({ default: 0 })
   savedBooksCount: number;
