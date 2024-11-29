@@ -38,7 +38,7 @@ export class EditionEntity {
   published_date: string;
 
   @Column({ type: 'text', default: null, nullable: true })
-  book_file: string;
+  bookFile: string;
 
   @Column({ default: false })
   verified: boolean;
@@ -50,13 +50,13 @@ export class EditionEntity {
   languages: string;
 
   @Column({ type: 'varchar', length: 50, default: null, nullable: true })
-  reading_hour: string;
+  readingHour: string;
 
   @Column({ default: false })
   presale: boolean;
 
   @Column({ type: 'varchar', length: 28, default: null, nullable: true })
-  presale_end: string;
+  presaleEnd: string;
 
   @ManyToOne(() => BookEntity, (book) => book.editions, { onDelete: 'CASCADE' })
   book: BookEntity;

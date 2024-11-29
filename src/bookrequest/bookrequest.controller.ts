@@ -26,11 +26,8 @@ export class BookrequestController {
       },
     },
   })
-  async createBookRequest(
-    @User() user: any,
-    @Body() booklistCreateDto: RequesterCreateDto,
-  ) {
-    return this.bookrequestService.createOne(user.uid, booklistCreateDto);
+  async createBookRequest(@User() user: any, @Body() data: RequesterCreateDto) {
+    return this.bookrequestService.createOne(user.uid, data);
   }
 
   @Get()

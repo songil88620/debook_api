@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { FollowEntity } from './follower.entity';
 import { FollowCreateDto } from './dtos';
 import { UserEntity } from 'src/user/user.entity';
@@ -23,6 +23,9 @@ export class FollowService {
   ) {}
 
   async followOne(followerId: string, followeeId: string) {
+    if (followerId == followeeId) {
+      return;
+    }
     const followed = await this.repository.findOne({
       where: {
         follower: { firebaseId: followerId },
@@ -35,19 +38,17 @@ export class FollowService {
         followee: { firebaseId: followeeId },
       });
     } else {
-      const follower = await this.userRepository.findOne({
-        where: { firebaseId: followerId },
-      });
-      const followee = await this.userRepository.findOne({
-        where: { firebaseId: followeeId },
-      });
+      const [follower, followee] = await Promise.all([
+        this.userRepository.findOne({ where: { firebaseId: followerId } }),
+        this.userRepository.findOne({ where: { firebaseId: followeeId } }),
+      ]);
       const new_follow: FollowCreateDto = {
         follower,
         followee,
         status: true,
       };
       const c = this.repository.create(new_follow);
-      this.repository.save(c);
+      await this.repository.save(c);
       // record the achievement
       this.achievementService.achieveOne(followeeId, ACHIEVE_TYPE.FOLLOW);
       // notify to the followee
@@ -79,8 +80,11 @@ export class FollowService {
     };
   }
 
-  async getRecommendedFollowers(filter: string[]) {
+  async getRecommendedFollowers(userid: string, filter: string[]) {
     const recommendedFollowers = await this.userRepository.find({
+      where: {
+        firebaseId: Not(userid),
+      },
       select: [
         'firebaseId',
         'firstName',

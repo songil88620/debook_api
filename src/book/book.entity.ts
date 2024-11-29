@@ -12,6 +12,7 @@ import {
   ManyToMany,
   OneToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
 
 @Entity('books')
@@ -20,9 +21,11 @@ export class BookEntity {
   id: string;
 
   @Column({ type: 'text', default: null, nullable: true })
+  @Index({ fulltext: true })
   title: string;
 
   @Column({ type: 'text', default: null, nullable: true })
+  @Index({ fulltext: true })
   summary: string;
 
   @Column({ type: 'text', default: null, nullable: true })

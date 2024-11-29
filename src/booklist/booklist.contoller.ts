@@ -28,7 +28,7 @@ import { User } from 'src/user/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
 
-@Controller('booklist')
+@Controller('booklists')
 export class BooklistController {
   constructor(
     private booklistService: BooklistService,
@@ -125,6 +125,41 @@ export class BooklistController {
     }
   }
 
+  @Get(':id')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Your booklist',
+    schema: {
+      example: {},
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to access',
+    schema: {
+      example: {
+        error: {
+          code: 'FORBIDDEN',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'The booklist not exist',
+    schema: {
+      example: {
+        error: {
+          code: 'NOT_FOUND',
+        },
+      },
+    },
+  })
+  async getOneBookList(@User() user: any, @Param('id') id: string) {
+    return this.booklistService.getOne(id, user.uid);
+  }
+
   @Get()
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
@@ -165,41 +200,6 @@ export class BooklistController {
     return this.booklistService.getList(user.uid, title, page, limit);
   }
 
-  @Get(':id')
-  @UseGuards(FirebaseAuthGuard)
-  @ApiResponse({
-    status: 200,
-    description: 'Your booklist',
-    schema: {
-      example: {},
-    },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'No permission to access',
-    schema: {
-      example: {
-        error: {
-          code: 'FORBIDDEN',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'The booklist not exist',
-    schema: {
-      example: {
-        error: {
-          code: 'NOT_FOUND',
-        },
-      },
-    },
-  })
-  async getOneBookList(@User() user: any, @Param('id') id: string) {
-    return this.booklistService.getOne(id, user.uid);
-  }
-
   @Delete(':id')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
@@ -212,6 +212,42 @@ export class BooklistController {
   })
   async deleteOneBookList(@User() user: any, @Param('id') id: string) {
     return this.booklistService.deleteOne(id, user.uid);
+  }
+
+  @Post(':booklistid/add-remove-book')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 204,
+    description: 'Action is done successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Not permission for this action',
+  })
+  async addOrRemoveBook(
+    @User() user: any,
+    @Param('booklistid') booklistid: string,
+    @Body() data: any,
+  ) {
+    return this.booklistService.addOrRemoveBook(
+      user.uid,
+      booklistid,
+      data.bookId,
+    );
+  }
+
+  @Post(':booklistid/save')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 204,
+    description: 'Action is done successfully',
+  })
+  @HttpCode(204)
+  async saveBooklist(
+    @User() user: any,
+    @Param('booklistid') booklistid: string,
+  ) {
+    return this.booklistService.saveOne(user.uid, booklistid);
   }
 
   @Post(':booklistid/invite-collaborators')
@@ -256,37 +292,5 @@ export class BooklistController {
       booklistid,
       data.status,
     );
-  }
-
-  @Post(':booklistid/add-remove-book')
-  @UseGuards(FirebaseAuthGuard)
-  @ApiResponse({
-    status: 204,
-    description: 'Action is done successfully',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Not permission for this action',
-  })
-  async addOrRemoveBook(
-    @User() user: any,
-    @Param('booklistid') booklistid: string,
-    @Body() book_id: string,
-  ) {
-    return this.booklistService.addOrRemoveBook(user.uid, booklistid, book_id);
-  }
-
-  @Post(':booklistid/save')
-  @UseGuards(FirebaseAuthGuard)
-  @ApiResponse({
-    status: 204,
-    description: 'Action is done successfully',
-  })
-  @HttpCode(204)
-  async saveBooklist(
-    @User() user: any,
-    @Param('booklistid') booklistid: string,
-  ) {
-    return this.booklistService.saveOne(user.uid, booklistid);
   }
 }

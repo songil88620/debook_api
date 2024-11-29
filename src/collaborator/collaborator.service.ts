@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   forwardRef,
   HttpException,
@@ -31,7 +32,7 @@ export class CollaboratorService {
       where: { id: booklist_id },
     });
     const inviter = await this.userRepository.findOne({
-      where: { firebaseId: booklist.owner_id },
+      where: { firebaseId: booklist.ownerId },
     });
     const inviter_name = inviter.firstName + ' ' + inviter.lastName;
     const booklist_name = booklist.title;
@@ -51,7 +52,7 @@ export class CollaboratorService {
       const c = this.repository.create(new_collaborator);
       await this.repository.save(c);
       this.notificationService.createNotification(
-        booklist.owner_id,
+        booklist.ownerId,
         cl,
         NOTI_TYPE.COLLABORATOR,
         msg,
@@ -96,7 +97,7 @@ export class CollaboratorService {
             );
       this.notificationService.createNotification(
         collaborator_id,
-        booklist.owner_id,
+        booklist.ownerId,
         NOTI_TYPE.COLLABORATOR,
         msg,
       );

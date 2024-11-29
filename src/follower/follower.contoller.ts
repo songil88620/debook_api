@@ -11,7 +11,8 @@ import {
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { FollowService } from './follower.service';
-import { User } from 'src/user/user.decorator';
+import { Tester, User } from 'src/user/user.decorator';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('followers')
 export class FollowController {
@@ -29,13 +30,17 @@ export class FollowController {
   }
 
   @Get('recommended')
-  @UseGuards(FirebaseAuthGuard)
+  // @UseGuards(FirebaseAuthGuard)
+  @Public()
   @ApiResponse({
     status: 200,
     description: 'Your recommend followee',
   })
-  async getRecommendedFollowers(@Query('filter') filter?: string[]) {
-    return this.followService.getRecommendedFollowers(filter);
+  async getRecommendedFollowers(
+    @Tester() user: any,
+    @Query('filter') filter?: string[],
+  ) {
+    return this.followService.getRecommendedFollowers(user.uid, filter);
   }
 
   @Get()

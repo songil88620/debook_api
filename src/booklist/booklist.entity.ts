@@ -10,10 +10,12 @@ import {
   JoinTable,
   ManyToMany,
   OneToMany,
+  Generated,
 } from 'typeorm';
 
-@Entity('booklist')
+@Entity('booklists')
 export class BooklistEntity {
+  @Generated('uuid')
   @PrimaryColumn({ type: 'varchar', unique: true, length: 36 })
   id: string;
 
@@ -27,7 +29,7 @@ export class BooklistEntity {
   image: string;
 
   @Column({ type: 'varchar', length: 36 })
-  owner_id: string;
+  ownerId: string;
 
   @Column({ default: true })
   public: boolean;

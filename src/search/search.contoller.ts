@@ -49,21 +49,21 @@ export class SearchController {
       );
       return { authors };
     } else if (filter == 'booklist') {
-      const booklist = await this.searchService.searchBooklist(
+      const booklists = await this.searchService.searchBooklist(
         user.uid,
         keyword,
         page,
         limit,
       );
-      return { booklist };
+      return { booklists };
     } else {
-      const [people, books, authors, booklist] = await Promise.all([
+      const [people, books, authors, booklists] = await Promise.all([
         this.searchService.searchPeople(user.uid, keyword, page, limit),
         this.searchService.searchBook(user.uid, keyword, page, limit),
         this.searchService.searchAuthor(user.uid, keyword, page, limit),
         this.searchService.searchBooklist(user.uid, keyword, page, limit),
       ]);
-      return { people, books, authors, booklist };
+      return { people, books, authors, booklists };
     }
   }
 }

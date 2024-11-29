@@ -24,6 +24,7 @@ export class BookService {
   ) {}
 
   private books = [];
+  public count = 0;
 
   async onModuleInit() {}
 
@@ -34,30 +35,59 @@ export class BookService {
     page: number = 1,
     limit: number = 20,
   ) {
-    const [books, total] = await this.repository
-      .createQueryBuilder('books')
-      .leftJoinAndSelect('books.authors', 'authors')
-      .leftJoinAndSelect('authors.user', 'user')
-      .where('books.title LIKE :title', { title: `%${title}%` })
-      .andWhere("CONCAT(user.firstName, ' ', user.lastName) LIKE :author", {
-        author: `%${author}%`,
-      })
-      .take(limit)
-      .skip((page - 1) * limit)
-      .orderBy('books.updated', 'DESC')
-      .getManyAndCount();
+    const [booksResult, userBook] = await Promise.all([
+      this.repository
+        .createQueryBuilder('books')
+        .leftJoinAndSelect('books.authors', 'authors')
+        .leftJoinAndSelect('authors.user', 'user')
+        .where('books.title LIKE :title', {
+          title: `%${title}%`,
+        })
+        .orWhere('user.firstName LIKE :firstName', {
+          firstName: `%${author}%`,
+        })
+        .orWhere('user.lastName LIKE :lastName', {
+          lastName: `%${author}%`,
+        })
+        .take(limit)
+        .skip((page - 1) * limit)
+        .orderBy('books.updated', 'DESC')
+        .getManyAndCount(),
 
-    const user_sbook = await this.userRepository.findOne({
-      where: { firebaseId: saver_id },
-      relations: ['savedBook'],
-    });
+      this.userRepository.findOne({
+        where: { firebaseId: saver_id },
+        relations: ['savedBook'],
+      }),
+    ]);
+
+    const [books, total] = booksResult;
 
     const pagination = {
       page,
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
-    return { books, saved_books: user_sbook.savedBook, pagination };
+    return { books, savedBooks: userBook?.savedBook, pagination };
+  }
+
+  async getRecommendedBooks(
+    saver_id: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
+    const [books, total] = await this.repository
+      .createQueryBuilder('books')
+      .take(limit)
+      .skip((page - 1) * limit)
+      .orderBy('books.updated', 'DESC')
+      .getManyAndCount();
+
+    const pagination = {
+      page,
+      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+      limit,
+    };
+    return { books, pagination };
   }
 
   async getOne(userid: string, bookid: string) {
@@ -91,13 +121,16 @@ export class BookService {
 
   async saveOne(saver_id: string, book_id: string) {
     try {
-      const saved_book = await this.repository.findOne({
-        where: { id: book_id },
-        relations: ['saved'],
-      });
-      const user = await this.userRepository.findOne({
-        where: { firebaseId: saver_id },
-      });
+      const [saved_book, user] = await Promise.all([
+        this.repository.findOne({
+          where: { id: book_id },
+          relations: ['saved'],
+        }),
+        this.userRepository.findOne({
+          where: { firebaseId: saver_id },
+        }),
+      ]);
+
       if (
         saved_book.saved.some((item) => item?.firebaseId == user.firebaseId)
       ) {
@@ -144,6 +177,16 @@ export class BookService {
     }
   }
 
+  async addRandom() {
+    for (let i = 0; i < 1000000; i++) {
+      const title = this.generateRandomString(10);
+      const summary = this.generateRandomString(30);
+      const tags = '';
+      const image = 'https://covers.openlibrary.org/b/isbn/0425031748-L.jpg';
+      await this.addOneBook(title, summary, image, tags);
+    }
+  }
+
   async addOneBook(
     title: string,
     summary: string,
@@ -160,5 +203,17 @@ export class BookService {
     };
     const c = this.repository.create(new_book);
     await this.repository.save(c);
+    this.count++;
+    console.log('>>', this.count);
+  }
+
+  generateRandomString(length: number) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters[randomIndex];
+    }
+    return result;
   }
 }

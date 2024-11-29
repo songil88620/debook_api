@@ -13,12 +13,12 @@ export class RequesterCreateDto {
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ description: 'author_name' })
+  @ApiProperty({ description: 'authorName' })
   @IsString()
   @IsOptional()
-  author_name?: string;
+  authorName?: string;
 
-  @ApiProperty({ description: 'file url' })
+  @ApiProperty({ description: 'fileUrl' })
   @IsString()
   @IsOptional()
   file?: string;

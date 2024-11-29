@@ -417,20 +417,20 @@ export class InvitationService {
   async getInvitationRank() {
     const ranking = await this.repository
       .createQueryBuilder('invitations')
-      .select('invitations.inviter.firebaseId', 'inviterId')
-      .addSelect('COUNT(invitations.inviter.firebaseId)', 'cnt')
-      .groupBy('invitations.inviter.firebaseId')
+      .select('invitations.invitee.firebaseId', 'inviteeId')
+      .addSelect('COUNT(invitations.invitee.firebaseId)', 'cnt')
+      .groupBy('invitations.invitee.firebaseId')
       .orderBy('cnt', 'DESC')
-      .leftJoinAndSelect('invitations.inviter', 'inviter')
+      .leftJoinAndSelect('invitations.invitee', 'invitee')
       .getRawMany();
     const invitationRanking = ranking.map((r: any) => {
       return {
-        inviterId: r.inviterId,
-        firstName: r.inviter_firstName,
-        lastName: r.inviter_lastName,
-        photo: r.inviter_photo,
-        email: r.inviter_email,
-        phone: r.inviter_phoneNumber,
+        inviteeId: r.inviteeId,
+        firstName: r.invitee_firstName,
+        lastName: r.invitee_lastName,
+        photo: r.invitee_photo,
+        email: r.invitee_email,
+        phone: r.invitee_phoneNumber,
         count: r.cnt,
       };
     });

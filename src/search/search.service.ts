@@ -81,9 +81,9 @@ export class SearchService {
     page: number = 1,
     limit: number = 20,
   ) {
-    const [booklist, total] = await this.booklistRepository
-      .createQueryBuilder('booklist')
-      .where('LOWER(booklist.title) LIKE LOWER(:keyword)', {
+    const [booklists, total] = await this.booklistRepository
+      .createQueryBuilder('booklists')
+      .where('LOWER(booklists.title) LIKE LOWER(:keyword)', {
         keyword: `%${keyword.toLowerCase()}%`,
       })
       .take(limit)
@@ -94,7 +94,7 @@ export class SearchService {
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
-    return { booklist, pagination };
+    return { booklists, pagination };
   }
 
   async searchAuthor(

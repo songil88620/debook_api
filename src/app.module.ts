@@ -36,6 +36,11 @@ import { BookrequestModule } from './bookrequest/bookrequest.module';
 import { LineEntity } from './line/line.entity';
 import { LineModule } from './line/line.module';
 import { SearchModule } from './search/search.module';
+import { HomeModule } from './home/home.module';
+import { LinecommentModule } from './linecomment/linecomment.module';
+import { LinecommentEntity } from './linecomment/linecomment.entity';
+import { LikeModule } from './like/like.module';
+import { LikeEntity } from './like/like.entity';
 
 @Module({
   imports: [
@@ -59,10 +64,16 @@ import { SearchModule } from './search/search.module';
         AuthorEntity,
         BookrequestEntity,
         LineEntity,
+        LinecommentEntity,
+        LikeEntity,
       ],
       username: process.env.DB_USER,
       password: process.env.DB_PW,
       synchronize: true,
+      // cache: {
+      //   type: 'redis',
+      //   duration: 60000,
+      // },
     }),
     ScheduleModule.forRoot(),
     UserModule,
@@ -81,6 +92,9 @@ import { SearchModule } from './search/search.module';
     BookrequestModule,
     LineModule,
     SearchModule,
+    HomeModule,
+    LinecommentModule,
+    LikeModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60,

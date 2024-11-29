@@ -41,3 +41,11 @@ export enum NOTI_MESSAGES {
   ACCEPT_BOOKLIST_COLLABORATOR = '$NAME is accepted your collaborator invitation.',
   REJECT_BOOKLIST_COLLABORATOR = '$NAME is rejected your collaborator invitation.',
 }
+
+export enum LIKE_TYPE {
+  NONE = 'none',
+  COMMENT = 'comment',
+  BOOK = 'book',
+  BOOKLIST = 'booklist',
+  LINE = 'line',
+}

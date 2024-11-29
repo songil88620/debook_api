@@ -1,5 +1,7 @@
 import { BookEntity } from 'src/book/book.entity';
 import { LINE_TYPE } from 'src/enum';
+import { LikeEntity } from 'src/like/like.entity';
+import { LinecommentEntity } from 'src/linecomment/linecomment.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -8,6 +10,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('lines')
@@ -21,8 +24,8 @@ export class LineEntity {
   @ManyToOne(() => BookEntity, (book) => book.lines, { onDelete: 'CASCADE' })
   book: BookEntity;
 
-  // @ManyToOne(() => BookEntity, (book) => book.lines, { onDelete: 'CASCADE' })
-  // comment: BookEntity;
+  @OneToMany(() => LinecommentEntity, (comments) => comments.line)
+  comments: LinecommentEntity[];
 
   @Column({ type: 'text', nullable: true, default: null })
   description: string;
@@ -32,6 +35,9 @@ export class LineEntity {
 
   @Column({ type: 'enum', enum: LINE_TYPE, default: LINE_TYPE.VIDEO })
   type: LINE_TYPE;
+
+  @OneToMany(() => LikeEntity, (like) => like.likedLine)
+  likes: LikeEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

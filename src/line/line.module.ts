@@ -5,13 +5,18 @@ import { UserEntity } from 'src/user/user.entity';
 import { LineEntity } from './line.entity';
 import { LineService } from './line.service';
 import { BookEntity } from 'src/book/book.entity';
+import { AchievementModule } from 'src/achievement/achievement.module';
+import { LineController } from './line.contoller';
+import { LikeModule } from 'src/like/like.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([LineEntity, UserEntity, BookEntity]),
     forwardRef(() => AuthModule),
+    forwardRef(() => AchievementModule),
+    forwardRef(() => LikeModule),
   ],
-  controllers: [],
+  controllers: [LineController],
   providers: [LineService],
   exports: [LineService],
 })

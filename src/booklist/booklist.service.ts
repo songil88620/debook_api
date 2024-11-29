@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   HttpException,
   HttpStatus,
@@ -6,10 +7,9 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { BooklistEntity } from './booklist.entity';
 import { BooklistCreateDto, BooklistUpdateDto } from './dtos';
-import { uuid } from 'uuidv4';
 import { CollaboratorService } from 'src/collaborator/collaborator.service';
 import { BookEntity } from 'src/book/book.entity';
 import { UserEntity } from 'src/user/user.entity';
@@ -34,29 +34,53 @@ export class BooklistService {
     private uploadService: UploadService,
   ) {}
 
-  async createOne(data: BooklistCreateDto, owner_id: string) {
-    const new_booklist = {
-      id: uuid(),
-      title: data?.title,
-      owner_id,
-      collaborator: uuid(),
-      book_ids: JSON.stringify(data?.book_ids),
+  async createOne(data: BooklistCreateDto, ownerId: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        firebaseId: ownerId,
+      },
+    });
+
+    const bookEntities = await this.bookrepository.findBy({
+      id: In(data.bookIds),
+    });
+
+    if (bookEntities.length !== data.bookIds.length) {
+      throw new BadRequestException({
+        error: {
+          code: 'BAD_REQUEST',
+          data: null,
+        },
+      });
+    }
+
+    const newBooklist = this.repository.create({
+      books: bookEntities,
+      collaborators: [user],
+      ownerId,
+      title: data.title,
+    });
+
+    const booklist = await this.repository.save(newBooklist);
+    await this.achievementService.achieveOne(ownerId, ACHIEVE_TYPE.BOOKLIST);
+
+    return {
+      booklist,
     };
-    const c = this.repository.create(new_booklist);
-    const booklist = await this.repository.save(c);
-    // record the achievement
-    this.achievementService.achieveOne(owner_id, ACHIEVE_TYPE.BOOKLIST);
-    return { booklist };
   }
 
   async saveOne(saver_id: string, booklist_id: string) {
-    const booklist = await this.repository.findOne({
-      where: { id: booklist_id },
-      relations: ['saved'],
-    });
-    const user = await this.userRepository.findOne({
-      where: { firebaseId: saver_id },
-    });
+    const [booklist, user] = await Promise.all([
+      this.repository.findOne({
+        where: { id: booklist_id },
+        relations: ['saved'],
+        select: ['id', 'saved'],
+      }),
+      this.userRepository.findOne({
+        where: { firebaseId: saver_id },
+      }),
+    ]);
+
     if (booklist.saved.some((item) => item.firebaseId == user.firebaseId)) {
       booklist.saved = booklist.saved.filter(
         (b) => b.firebaseId !== user.firebaseId,
@@ -67,15 +91,17 @@ export class BooklistService {
     await this.repository.save(booklist);
   }
 
-  async updateOne(id: string, owner_id: string, data: BooklistUpdateDto) {
-    const booklist = await this.repository.findOne({ where: { id, owner_id } });
+  async updateOne(id: string, ownerId: string, data: BooklistUpdateDto) {
+    const booklist = await this.repository.findOne({ where: { id, ownerId } });
     if (booklist.image != null && booklist.image != data.image) {
       // remove old image on S3
       this.uploadService.deleteFileOnS3(booklist.image);
     }
     if (booklist) {
-      await this.repository.update({ id, owner_id }, data);
-      const booklist = this.repository.findOne({ where: { id, owner_id } });
+      await this.repository.update({ id, ownerId }, data);
+      const booklist = await this.repository.findOne({
+        where: { id, ownerId },
+      });
       return { booklist };
     } else {
       throw new HttpException(
@@ -85,25 +111,39 @@ export class BooklistService {
     }
   }
 
-  async getList(uid: string, title: string, page: number, limit: number) {
-    const [booklist, total] = await this.repository.findAndCount({
-      where: { owner_id: uid, title: Like(`%${title}%`) },
-      take: limit,
-      skip: (page - 1) * limit,
-    });
+  async getList(
+    uid: string,
+    title: string = '',
+    page: number = 1,
+    limit: number = 20,
+  ) {
+    const _title = title == '' ? title : title.toLowerCase();
+    const [booklistResult, user_sbooklist] = await Promise.all([
+      this.repository
+        .createQueryBuilder('booklists')
+        .where('LOWER(booklists.title) LIKE LOWER(:title)', {
+          title: `%${_title}%`,
+        })
+        .andWhere('booklists.ownerId = :uid', { uid })
+        .take(limit)
+        .skip((page - 1) * limit)
+        .orderBy('booklists.updated', 'DESC')
+        .getManyAndCount(),
+      this.userRepository.findOne({
+        where: { firebaseId: uid },
+        relations: ['savedBooklists'],
+      }),
+    ]);
+    const [booklist, total] = booklistResult;
     const pagination = {
       page,
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
-    const user_sbooklist = await this.userRepository.findOne({
-      where: { firebaseId: uid },
-      relations: ['savedBooklists'],
-    });
     return {
       booklist,
       pagination,
-      saved_booklist: user_sbooklist.savedBooklists,
+      savedBooklists: user_sbooklist?.savedBooklists,
     };
   }
 
@@ -111,13 +151,23 @@ export class BooklistService {
     const booklist = await this.repository.findOne({
       where: { id },
       relations: ['books'],
+      select: [
+        'id',
+        'image',
+        'liked',
+        'ownerId',
+        'public',
+        'title',
+        'summary',
+        'books',
+      ],
     });
     if (booklist) {
       // check if this booklist is public or not
       if (booklist.public) {
         return { booklist };
       } else {
-        if (booklist.owner_id == id) {
+        if (booklist.ownerId == id) {
           return { booklist };
         } else {
           // check the collaborator if the requester is in the collaborator list
@@ -146,8 +196,8 @@ export class BooklistService {
     }
   }
 
-  async deleteOne(id: string, owner_id: string) {
-    const bl = await this.repository.findOne({ where: { id, owner_id } });
+  async deleteOne(id: string, ownerId: string) {
+    const bl = await this.repository.findOne({ where: { id, ownerId } });
     if (bl) {
       await this.repository.delete({ id });
       throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
@@ -160,12 +210,12 @@ export class BooklistService {
   }
 
   async inviteCollaborators(
-    owner_id: string,
+    ownerId: string,
     booklist_id: string,
     collaborators: string[],
   ) {
     const booklist = await this.repository.findOne({
-      where: { id: booklist_id, owner_id },
+      where: { id: booklist_id, ownerId },
     });
     if (booklist) {
       await this.collaboratorService.inviteCollaborators(
@@ -204,15 +254,18 @@ export class BooklistService {
 
   // add or remove a book from the booklist
   async addOrRemoveBook(userid: string, booklist_id: string, bookid: string) {
-    const booklist = await this.repository.findOne({
-      where: { id: booklist_id, owner_id: userid },
-      relations: ['books'],
-    });
-    const book = await this.bookrepository.findOne({ where: { id: bookid } });
+    const [booklist, book] = await Promise.all([
+      this.repository.findOne({
+        where: { id: booklist_id, ownerId: userid },
+        relations: ['books'],
+        select: ['id', 'books'],
+      }),
+      this.bookrepository.findOne({ where: { id: bookid } }),
+    ]);
 
     if (book && booklist) {
-      if (booklist.books.some((item) => item.id == book.id)) {
-        booklist.books = booklist.books.filter((b) => b.id !== book.id);
+      if (booklist.books.some((item) => item.id == bookid)) {
+        booklist.books = booklist.books.filter((b) => b.id !== bookid);
       } else {
         booklist.books.push(book);
       }

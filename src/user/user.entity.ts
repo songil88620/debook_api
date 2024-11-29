@@ -6,7 +6,9 @@ import { BookrequestEntity } from 'src/bookrequest/bookrequest.entity';
 import { CollaboratorEntity } from 'src/collaborator/collaborator.entity';
 import { FollowEntity } from 'src/follower/follower.entity';
 import { InvitationEntity } from 'src/invitation/invitation.entity';
+import { LikeEntity } from 'src/like/like.entity';
 import { LineEntity } from 'src/line/line.entity';
+import { LinecommentEntity } from 'src/linecomment/linecomment.entity';
 import { NotificationEntity } from 'src/notification/notification.entity';
 import {
   Entity,
@@ -19,6 +21,7 @@ import {
   OneToMany,
   JoinColumn,
   OneToOne,
+  Index,
 } from 'typeorm';
 
 @Entity('users')
@@ -33,6 +36,7 @@ export class UserEntity {
   email: string;
 
   @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
+  @Index({ fulltext: true })
   firstName: string;
 
   @Column({ default: 0 })
@@ -45,13 +49,14 @@ export class UserEntity {
   @JoinColumn()
   invitation: InvitationEntity | null;
 
-  @Column({ default: 0 })
+  @Column({ default: 5 })
   invitationsRemainingCount: number;
 
   @Column({ default: true })
   isPublic: boolean;
 
   @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
+  @Index({ fulltext: true })
   lastName: string;
 
   @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
@@ -121,6 +126,14 @@ export class UserEntity {
   @JoinTable()
   @OneToMany(() => LineEntity, (liner) => liner.liner)
   liner: LineEntity[];
+
+  @JoinTable()
+  @OneToMany(() => LinecommentEntity, (linecomment) => linecomment.author)
+  linecommentor: LinecommentEntity[];
+
+  @JoinTable()
+  @OneToMany(() => LikeEntity, (liker) => liker.userId)
+  liker: LikeEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

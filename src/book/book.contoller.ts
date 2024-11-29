@@ -11,11 +11,26 @@ import {
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { BookService } from './book.service';
-import { User } from 'src/user/user.decorator';
+import { Tester, User } from 'src/user/user.decorator';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('books')
 export class BookController {
   constructor(private bookService: BookService) {}
+
+  @Get('recommended')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Your recommend books',
+  })
+  async getRecommendedBooks(
+    @User() user: any,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.bookService.getRecommendedBooks(user.uid, page, limit);
+  }
 
   @Get(':id')
   @UseGuards(FirebaseAuthGuard)

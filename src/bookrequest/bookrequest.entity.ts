@@ -6,6 +6,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
   ManyToOne,
+  Index,
 } from 'typeorm';
 import { INVITATION_STATUS_TYPE } from 'src/enum';
 
@@ -15,12 +16,14 @@ export class BookrequestEntity {
   id: string;
 
   @Column({ type: 'varchar', default: null, length: 100 })
-  author_name?: string;
+  authorName?: string;
 
   @Column({ type: 'text', default: null, nullable: true })
+  @Index({ fulltext: true })
   title?: string;
 
   @Column({ type: 'text', default: null, nullable: true })
+  @Index({ fulltext: true })
   description?: string;
 
   @Column({ type: 'text', default: null, nullable: true })

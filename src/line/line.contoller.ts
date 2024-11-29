@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { User } from 'src/user/user.decorator';
@@ -33,6 +33,51 @@ export class LineController {
     return await this.lineService.createLine(user.uid, data);
   }
 
+  @Post('likeOrUnlike')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 201,
+    description: 'Create one line',
+    schema: {
+      example: {},
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to access',
+    schema: {
+      example: {
+        error: {
+          code: 'FORBIDDEN',
+        },
+      },
+    },
+  })
+  async likeOrUnlike(@User() user: any, @Body() data: any) {
+    await this.lineService.likeOrUnlike(user.uid, data.lineId);
+  }
+
+  @Get(':id')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: '',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to access',
+    schema: {
+      example: {
+        error: {
+          code: 'FORBIDDEN',
+        },
+      },
+    },
+  })
+  async getLineOne(@User() user: any, @Param('id') id: number) {
+    return await this.lineService.getLineOne(user.uid, id);
+  }
+
   @Get()
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
@@ -50,18 +95,7 @@ export class LineController {
       },
     },
   })
-  @ApiResponse({
-    status: 404,
-    description: 'The books not exist',
-    schema: {
-      example: {
-        error: {
-          code: 'NOT_FOUND',
-        },
-      },
-    },
-  })
-  async followUser(@User() user: any) {
+  async getLines(@User() user: any) {
     return await this.lineService.getLines(user.uid);
   }
 }

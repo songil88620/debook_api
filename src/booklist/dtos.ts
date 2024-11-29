@@ -9,8 +9,8 @@ export class BooklistCreateDto {
 
   @ApiProperty({ description: 'book_ids' })
   @IsArray()
-  @IsOptional()
-  book_ids?: string;
+  @IsString({ each: true })
+  bookIds?: string[];
 }
 
 export class BooklistUpdateDto {
