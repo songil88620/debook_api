@@ -71,7 +71,7 @@ export class UserEntity {
   @Column({ type: 'varchar', default: 'user', length: 10 })
   role: string;
 
-  @Column({ type: 'varchar', nullable: true, default: null, length: 10 })
+  @Column({ type: 'varchar', nullable: true, default: null, length: 50 })
   username: string;
 
   @Column({ type: 'varchar', default: '#000000', length: 9 })
