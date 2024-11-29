@@ -145,8 +145,8 @@ export class LineService {
       },
     });
 
-    line_one['commentCounts'] = line_one.comments.length;
-    line_one['likeCounts'] = line_one.likes.length;
+    line_one['commentCount'] = line_one.comments.length;
+    line_one['likeCount'] = line_one.likes.length;
     line_one.likes = line_one.likes.splice(0, 3);
     const commentMap = new Map();
     line_one.comments.forEach((comment: any) => {

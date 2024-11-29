@@ -30,14 +30,13 @@ export class FollowController {
   }
 
   @Get('recommended')
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
+  @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 200,
     description: 'Your recommend followee',
   })
   async getRecommendedFollowers(
-    @Tester() user: any,
+    @User() user: any,
     @Query('filter') filter?: string[],
   ) {
     return this.followService.getRecommendedFollowers(user.uid, filter);
