@@ -5,10 +5,11 @@ import { AchievementEntity } from './achievement.entity';
 import { AchievementService } from './achievement.service';
 import { UserEntity } from 'src/user/user.entity';
 import { AchievementController } from './achievement.contoller';
+import { InvitationEntity } from 'src/invitation/invitation.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AchievementEntity, UserEntity]),
+    TypeOrmModule.forFeature([AchievementEntity, UserEntity, InvitationEntity]),
     forwardRef(() => AuthModule),
   ],
   controllers: [AchievementController],

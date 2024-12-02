@@ -3,7 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AchievementEntity } from './achievement.entity';
 import { UserEntity } from 'src/user/user.entity';
-import { ACHIEVE_TYPE } from 'src/enum';
+import { ACHIEVE_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
+import { InvitationEntity } from 'src/invitation/invitation.entity';
 
 @Injectable()
 export class AchievementService {
@@ -12,12 +13,65 @@ export class AchievementService {
     private repository: Repository<AchievementEntity>,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+    @InjectRepository(InvitationEntity)
+    private invitationRepository: Repository<InvitationEntity>,
   ) {}
 
   async getMyAchievement(user_id: string) {
-    const achievements = await this.repository.find({
-      where: { achiever: { firebaseId: user_id } },
-    });
+    const [acvs, invCount] = await Promise.all([
+      this.repository.find({
+        where: { achiever: { firebaseId: user_id } },
+      }),
+      this.invitationRepository.count({
+        where: {
+          inviter: { firebaseId: user_id },
+          status: INVITATION_STATUS_TYPE.ACCEPTED,
+        },
+      }),
+    ]);
+
+    const achievements = [
+      {
+        achievement: 'j',
+        achived: true,
+      },
+      {
+        achievement: '5fj',
+        achived: invCount >= 5,
+      },
+      {
+        achievement: 'c3lb',
+        achived:
+          acvs.find((a) => a.type === ACHIEVE_TYPE.BOOKLIST)?.done >= 3 &&
+          acvs.find((a) => a.type === ACHIEVE_TYPE.LINE)?.done >= 3,
+      },
+      {
+        achievement: 'c6lb',
+        achived:
+          acvs.find((a) => a.type === ACHIEVE_TYPE.BOOKLIST)?.done >= 6 &&
+          acvs.find((a) => a.type === ACHIEVE_TYPE.LINE)?.done >= 6,
+      },
+      {
+        achievement: 'c9lb',
+        achived:
+          acvs.find((a) => a.type === ACHIEVE_TYPE.BOOKLIST)?.done >= 9 &&
+          acvs.find((a) => a.type === ACHIEVE_TYPE.LINE)?.done >= 9,
+      },
+      {
+        achievement: 'f100',
+        achived: acvs.find((a) => a.type === ACHIEVE_TYPE.FOLLOW)?.done >= 100,
+      },
+      {
+        achievement: 'f5000',
+        achived: acvs.find((a) => a.type === ACHIEVE_TYPE.FOLLOW)?.done >= 5000,
+      },
+      {
+        achievement: 'f10000',
+        achived:
+          acvs.find((a) => a.type === ACHIEVE_TYPE.FOLLOW)?.done >= 10000,
+      },
+    ];
+
     return { achievements };
   }
 
