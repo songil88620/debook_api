@@ -52,6 +52,7 @@ export class UserService {
       await this.userRepository.update({ firebaseId: id }, user);
       const u = await this.userRepository.findOne({
         where: { firebaseId: id },
+        relations: ['invitation'],
       });
       return { user: u };
     } catch (e) {
