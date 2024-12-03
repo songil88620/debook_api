@@ -8,10 +8,16 @@ import { AuthorModule } from 'src/author/author.module';
 import { UserEntity } from 'src/user/user.entity';
 import { AuthorEntity } from 'src/author/author.entity';
 import { LoggerModule } from 'src/logger/logger.module';
+import { RatingEntity } from 'src/rating/rating.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BookEntity, UserEntity, AuthorEntity]),
+    TypeOrmModule.forFeature([
+      BookEntity,
+      UserEntity,
+      AuthorEntity,
+      RatingEntity,
+    ]),
     forwardRef(() => AuthModule),
     forwardRef(() => AuthorModule),
     forwardRef(() => LoggerModule),

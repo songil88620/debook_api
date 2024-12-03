@@ -30,8 +30,8 @@ export class LineEntity {
   @Column({ type: 'text', nullable: true, default: null })
   description: string;
 
-  @Column({ type: 'varchar', default: '[0, 0, 0, 0, 0]', length: 100 })
-  rating: string;
+  @Column({ default: 5 })
+  rating: number;
 
   @Column({ type: 'enum', enum: LINE_TYPE, default: LINE_TYPE.VIDEO })
   type: LINE_TYPE;

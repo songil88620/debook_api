@@ -12,6 +12,7 @@ import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { InvitaionDto, InvitationCreateDto } from './dtos';
 import { InvitationService } from './invitation.service';
 import { User } from 'src/user/user.decorator';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('invitations')
 export class InvitationController {
@@ -82,7 +83,7 @@ export class InvitationController {
         user.phone_number,
       );
     } else {
-      return this.invitationService.getInvitations(user.uid);
+      return await this.invitationService.getInvitations(user.uid);
     }
   }
 

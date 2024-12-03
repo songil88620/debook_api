@@ -55,3 +55,8 @@ export enum ONBOARDING_STATUS {
   BOOKLIST_COMPLETED = 'bc',
   FOLLOWERS_FINISHED = 'ff',
 }
+
+export enum RATING_TYPE {
+  BOOK = 'book',
+  BOOKLIST = 'booklist',
+}

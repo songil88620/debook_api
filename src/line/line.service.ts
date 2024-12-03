@@ -52,6 +52,7 @@ export class LineService {
       book,
       description: data.description,
       type: data.type,
+      rating: data.rating,
     };
     const c = this.repository.create(new_line);
     const line = await this.repository.save(c);

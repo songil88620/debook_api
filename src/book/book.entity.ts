@@ -2,6 +2,7 @@ import { AuthorEntity } from 'src/author/author.entity';
 import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { EditionEntity } from 'src/edition/edition.entity';
 import { LineEntity } from 'src/line/line.entity';
+// import { RatingEntity } from 'src/rating/rating.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -64,6 +65,9 @@ export class BookEntity {
 
   @OneToMany(() => LineEntity, (lines) => lines.book)
   lines: LineEntity[];
+
+  // @OneToMany(() => RatingEntity, (edition) => edition.book)
+  // editions: RatingEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;
