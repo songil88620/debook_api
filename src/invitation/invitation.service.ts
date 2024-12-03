@@ -17,6 +17,7 @@ import { addHours, isBefore } from 'date-fns';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { NOTI_MESSAGES, NOTI_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
 import { NotificationService } from 'src/notification/notification.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class InvitationService {
@@ -30,6 +31,8 @@ export class InvitationService {
     private userRepository: Repository<UserEntity>,
     @Inject(forwardRef(() => NotificationService))
     private notificationService: NotificationService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -38,12 +41,14 @@ export class InvitationService {
         process.env.TWILIO_AUTH_TOKEN,
       );
       this.twilioPhoneNumber = process.env.TWILO_NUMBER;
-    } catch (e) {
-      console.log('twillio', e);
+    } catch (error) {
+      this.loggerService.error('TwilloInitError', error);
     }
   }
 
-  async onModuleInit() {}
+  async onModuleInit() {
+    // this.sendSMSviaPhone('+17607903430', 'test messgae');
+  }
 
   @Cron(CronExpression.EVERY_HOUR, { name: 'status check bot' })
   async runStatusCheckBot() {
@@ -59,6 +64,10 @@ export class InvitationService {
 
     // user can't send invitation by himself
     if (user.phoneNumber == phone) {
+      this.loggerService.warn(
+        'SendInvitation',
+        'User can not send inviation by himself',
+      );
       throw new HttpException(
         {
           error: {
@@ -92,6 +101,7 @@ export class InvitationService {
       },
     });
     if (accepted_invitation) {
+      this.loggerService.warn('SendInvitation', 'Already invited phone number');
       throw new HttpException(
         {
           error: {
@@ -173,8 +183,10 @@ export class InvitationService {
         ...invitation,
         currentTime,
       }));
+      this.loggerService.debug('GetInvitations', ivs);
       return { invitations: ivs };
-    } catch (e) {
+    } catch (error) {
+      this.loggerService.error('GetInvitationsError', error);
       return { invitations: [] };
     }
   }
@@ -215,7 +227,7 @@ export class InvitationService {
         'inviter.photo',
       ])
       .getOne();
-
+    this.loggerService.debug('GetOneInvitation', invitation);
     return {
       invitation: {
         ...invitation,
@@ -412,6 +424,7 @@ export class InvitationService {
       });
       return true;
     } catch (error) {
+      this.loggerService.error('TwilloSmsError', error);
       return false;
     }
   }

@@ -8,6 +8,7 @@ import { UserEntity } from 'src/user/user.entity';
 import { AchievementService } from 'src/achievement/achievement.service';
 import { ACHIEVE_TYPE, NOTI_MESSAGES, NOTI_TYPE } from 'src/enum';
 import { NotificationService } from 'src/notification/notification.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class FollowService {
@@ -20,6 +21,8 @@ export class FollowService {
     private achievementService: AchievementService,
     @Inject(forwardRef(() => NotificationService))
     private notificationService: NotificationService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   async followOne(followerId: string, followeeId: string) {
@@ -75,6 +78,7 @@ export class FollowService {
       ],
     });
 
+    this.loggerService.debug('FollowerGetAll', followers);
     return {
       followers,
     };
@@ -95,7 +99,10 @@ export class FollowService {
         'savedBooksCount',
       ],
     });
-
+    this.loggerService.debug(
+      'FollowerGetRecommendedFollowers',
+      recommendedFollowers,
+    );
     return {
       recommendedFollowers,
     };

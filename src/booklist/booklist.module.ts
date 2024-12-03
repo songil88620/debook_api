@@ -11,6 +11,7 @@ import { UserEntity } from 'src/user/user.entity';
 import { CollaboratorEntity } from 'src/collaborator/collaborator.entity';
 import { UploadModule } from 'src/upload/upload.module';
 import { AchievementModule } from 'src/achievement/achievement.module';
+import { LoggerModule } from 'src/logger/logger.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AchievementModule } from 'src/achievement/achievement.module';
     forwardRef(() => BookModule),
     forwardRef(() => UploadModule),
     forwardRef(() => AchievementModule),
+    forwardRef(() => LoggerModule),
   ],
   controllers: [BooklistController],
   providers: [BooklistService],

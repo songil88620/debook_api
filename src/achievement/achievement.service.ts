@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AchievementEntity } from './achievement.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { ACHIEVE_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
 import { InvitationEntity } from 'src/invitation/invitation.entity';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class AchievementService {
@@ -15,6 +16,8 @@ export class AchievementService {
     private userRepository: Repository<UserEntity>,
     @InjectRepository(InvitationEntity)
     private invitationRepository: Repository<InvitationEntity>,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   async getMyAchievement(user_id: string) {
@@ -72,6 +75,7 @@ export class AchievementService {
       },
     ];
 
+    this.loggerService.debug('GetMyAchievement', achievements);
     return { achievements };
   }
 

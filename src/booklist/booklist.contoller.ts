@@ -27,6 +27,7 @@ import { BooklistService } from './booklist.service';
 import { User } from 'src/user/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Controller('booklists')
 export class BooklistController {
@@ -34,6 +35,8 @@ export class BooklistController {
     private booklistService: BooklistService,
     @Inject(forwardRef(() => UploadService))
     private uploadService: UploadService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   @Post()
@@ -116,8 +119,9 @@ export class BooklistController {
           );
         }
       }
-      return this.booklistService.updateOne(id, user.uid, data);
-    } catch (e) {
+      return await this.booklistService.updateOne(id, user.uid, data);
+    } catch (error) {
+      this.loggerService.error('BooklistUpdate', error);
       throw new HttpException(
         { error: { code: 'FORBIDDEN' } },
         HttpStatus.FORBIDDEN,

@@ -8,6 +8,7 @@ import { BookEntity } from 'src/book/book.entity';
 import { AchievementModule } from 'src/achievement/achievement.module';
 import { LineController } from './line.contoller';
 import { LikeModule } from 'src/like/like.module';
+import { LoggerModule } from 'src/logger/logger.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { LikeModule } from 'src/like/like.module';
     forwardRef(() => AuthModule),
     forwardRef(() => AchievementModule),
     forwardRef(() => LikeModule),
+    forwardRef(() => LoggerModule),
   ],
   controllers: [LineController],
   providers: [LineService],

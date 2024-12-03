@@ -8,6 +8,7 @@ import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { NotificationModule } from 'src/notification/notification.module';
 import { CollaboratorController } from './collaborator.controller';
+import { LoggerModule } from 'src/logger/logger.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CollaboratorController } from './collaborator.controller';
     forwardRef(() => AuthModule),
     forwardRef(() => BooklistModule),
     forwardRef(() => NotificationModule),
+    forwardRef(() => LoggerModule),
   ],
   controllers: [CollaboratorController],
   providers: [CollaboratorService],

@@ -6,11 +6,13 @@ import { AchievementService } from './achievement.service';
 import { UserEntity } from 'src/user/user.entity';
 import { AchievementController } from './achievement.contoller';
 import { InvitationEntity } from 'src/invitation/invitation.entity';
+import { LoggerModule } from 'src/logger/logger.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AchievementEntity, UserEntity, InvitationEntity]),
     forwardRef(() => AuthModule),
+    forwardRef(() => LoggerModule),
   ],
   controllers: [AchievementController],
   providers: [AchievementService],

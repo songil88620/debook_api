@@ -7,6 +7,7 @@ import { InvitationService } from './invitation.service';
 import { InvitationController } from './invitation.contoller';
 import { UserEntity } from 'src/user/user.entity';
 import { NotificationModule } from 'src/notification/notification.module';
+import { LoggerModule } from 'src/logger/logger.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { NotificationModule } from 'src/notification/notification.module';
     forwardRef(() => AuthModule),
     forwardRef(() => UploadModule),
     forwardRef(() => NotificationModule),
+    forwardRef(() => LoggerModule),
   ],
   controllers: [InvitationController],
   providers: [InvitationService],

@@ -12,6 +12,7 @@ import { AuthorService } from 'src/author/author.service';
 import axios from 'axios';
 import { uuid } from 'uuidv4';
 import { UserEntity } from 'src/user/user.entity';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class BookService {
@@ -21,6 +22,8 @@ export class BookService {
     private userRepository: Repository<UserEntity>,
     @Inject(forwardRef(() => AuthorService))
     private authorService: AuthorService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   private books = [];
@@ -61,6 +64,7 @@ export class BookService {
     ]);
 
     const [books, total] = booksResult;
+    this.loggerService.debug('GetBooks', books);
 
     const pagination = {
       page,
@@ -82,11 +86,14 @@ export class BookService {
       .orderBy('books.updated', 'DESC')
       .getManyAndCount();
 
+    this.loggerService.debug('GetRecommendedBooks', books);
+
     const pagination = {
       page,
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
+    this.loggerService.debug('GetRecommendedBooks', books);
     return { books, pagination };
   }
 
@@ -111,7 +118,8 @@ export class BookService {
           HttpStatus.NOT_FOUND,
         );
       }
-    } catch (e) {
+    } catch (error) {
+      this.loggerService.error('BookGetOne', error);
       throw new HttpException(
         { error: { code: 'FORBIDDEN' } },
         HttpStatus.FORBIDDEN,
@@ -141,7 +149,8 @@ export class BookService {
         saved_book.saved.push(user);
       }
       await this.repository.save(saved_book);
-    } catch (e) {
+    } catch (error) {
+      this.loggerService.error('BookSaveOne', error);
       throw new HttpException(
         { error: { code: 'FORBIDDEN' } },
         HttpStatus.FORBIDDEN,

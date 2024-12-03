@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { LoggerService } from 'src/logger/logger.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const AWS = require('aws-sdk');
 
@@ -6,12 +7,19 @@ const AWS = require('aws-sdk');
 export class UploadService {
   private s3;
 
-  constructor() {
-    this.s3 = new AWS.S3({
-      accessKeyId: process.env.AWS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_KEY,
-      region: process.env.AWS_REGION,
-    });
+  constructor(
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
+  ) {
+    try {
+      this.s3 = new AWS.S3({
+        accessKeyId: process.env.AWS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_KEY,
+        region: process.env.AWS_REGION,
+      });
+    } catch (error) {
+      this.loggerService.error('S3InitError', error);
+    }
   }
 
   // save file on aws s3 bucket. path is subdirectory name and name is file name to be saved
@@ -39,7 +47,8 @@ export class UploadService {
         status: true,
         file_url,
       };
-    } catch (e) {
+    } catch (error) {
+      this.loggerService.debug('SaveFileOnS3', error);
       return {
         status: false,
         file_url: '',
@@ -56,8 +65,9 @@ export class UploadService {
           Key: key,
         })
         .promise();
-    } catch (e) {
-      throw e;
+    } catch (error) {
+      this.loggerService.debug('DeleteFileOnS3', error);
+      throw error;
     }
   }
 

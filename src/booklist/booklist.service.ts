@@ -16,6 +16,7 @@ import { UserEntity } from 'src/user/user.entity';
 import { ACHIEVE_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
 import { AchievementService } from 'src/achievement/achievement.service';
 import { UploadService } from 'src/upload/upload.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class BooklistService {
@@ -32,18 +33,21 @@ export class BooklistService {
     private achievementService: AchievementService,
     @Inject(forwardRef(() => UploadService))
     private uploadService: UploadService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   async createOne(data: BooklistCreateDto, ownerId: string) {
-    const user = await this.userRepository.findOne({
-      where: {
-        firebaseId: ownerId,
-      },
-    });
-
-    const bookEntities = await this.bookrepository.findBy({
-      id: In(data.bookIds),
-    });
+    const [user, bookEntities] = await Promise.all([
+      this.userRepository.findOne({
+        where: {
+          firebaseId: ownerId,
+        },
+      }),
+      this.bookrepository.findBy({
+        id: In(data.bookIds),
+      }),
+    ]);
 
     if (bookEntities.length !== data.bookIds.length) {
       throw new BadRequestException({
@@ -63,7 +67,7 @@ export class BooklistService {
 
     const booklist = await this.repository.save(newBooklist);
     await this.achievementService.achieveOne(ownerId, ACHIEVE_TYPE.BOOKLIST);
-
+    this.loggerService.debug('BooklistCreateOne', booklist);
     return {
       booklist,
     };
@@ -140,6 +144,7 @@ export class BooklistService {
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
+    this.loggerService.debug('BooklistGetList', booklist);
     return {
       booklist,
       pagination,

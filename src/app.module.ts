@@ -41,6 +41,7 @@ import { LinecommentModule } from './linecomment/linecomment.module';
 import { LinecommentEntity } from './linecomment/linecomment.entity';
 import { LikeModule } from './like/like.module';
 import { LikeEntity } from './like/like.entity';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { LikeEntity } from './like/like.entity';
     HomeModule,
     LinecommentModule,
     LikeModule,
+    LoggerModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60,

@@ -13,6 +13,7 @@ import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { NOTI_MESSAGES, NOTI_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
 import { NotificationService } from 'src/notification/notification.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class CollaboratorService {
@@ -25,6 +26,8 @@ export class CollaboratorService {
     private userRepository: Repository<UserEntity>,
     @Inject(forwardRef(() => NotificationService))
     private notificationService: NotificationService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   async inviteCollaborators(booklist_id: string, collaborators: string[]) {

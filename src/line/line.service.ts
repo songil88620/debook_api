@@ -13,6 +13,7 @@ import { BookEntity } from 'src/book/book.entity';
 import { AchievementService } from 'src/achievement/achievement.service';
 import { ACHIEVE_TYPE, LIKE_TYPE } from 'src/enum';
 import { LikeService } from 'src/like/like.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class LineService {
@@ -27,6 +28,8 @@ export class LineService {
     private achievementService: AchievementService,
     @Inject(forwardRef(() => LikeService))
     private likeService: LikeService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   async createLine(user_id: string, data: LineCreateDto) {
@@ -53,6 +56,7 @@ export class LineService {
     const c = this.repository.create(new_line);
     const line = await this.repository.save(c);
     await this.achievementService.achieveOne(user_id, ACHIEVE_TYPE.LINE);
+    this.loggerService.debug('CreateLine', line);
     return { line };
   }
 
@@ -82,7 +86,7 @@ export class LineService {
         },
       },
     });
-
+    this.loggerService.debug('GetLines', lines);
     return { lines };
   }
 
@@ -168,7 +172,7 @@ export class LineService {
       }
     });
     line_one.comments = nestedComments;
-
+    this.loggerService.debug('GetLineOne', line_one);
     return { line: line_one };
   }
 

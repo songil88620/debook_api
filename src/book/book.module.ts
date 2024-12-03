@@ -7,12 +7,14 @@ import { BookController } from './book.contoller';
 import { AuthorModule } from 'src/author/author.module';
 import { UserEntity } from 'src/user/user.entity';
 import { AuthorEntity } from 'src/author/author.entity';
+import { LoggerModule } from 'src/logger/logger.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([BookEntity, UserEntity, AuthorEntity]),
     forwardRef(() => AuthModule),
     forwardRef(() => AuthorModule),
+    forwardRef(() => LoggerModule),
   ],
   controllers: [BookController],
   providers: [BookService],
