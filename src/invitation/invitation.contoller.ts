@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, UseGuards, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { InvitaionDto, InvitationCreateDto } from './dtos';
@@ -68,8 +76,14 @@ export class InvitationController {
     status: 200,
     description: 'The user has invited 0 or more users',
   })
-  async getInvitations(@User() user: any) {
-    return this.invitationService.getInvitations(user.uid);
+  async getInvitations(@User() user: any, @Query('type') type?: string) {
+    if (type === 'target') {
+      return this.invitationService.getInvitationsByPhoneNumber(
+        user.phone_number,
+      );
+    } else {
+      return this.invitationService.getInvitations(user.uid);
+    }
   }
 
   @Get('/ranking')

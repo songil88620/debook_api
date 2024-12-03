@@ -47,7 +47,7 @@ export class InvitationService {
   }
 
   async onModuleInit() {
-    // this.sendSMSviaPhone('+17607903430', 'test messgae');
+    // this.sendSMSviaPhone('+46726415958', 'test messgae');
   }
 
   @Cron(CronExpression.EVERY_HOUR, { name: 'status check bot' })
