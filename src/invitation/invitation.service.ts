@@ -155,7 +155,7 @@ export class InvitationService {
       const invitations = await this.repository
         .createQueryBuilder('invitations')
         .leftJoinAndSelect('invitations.inviter', 'inviter')
-        .leftJoinAndSelect('invitations.inviter', 'invitee')
+        .leftJoinAndSelect('invitations.invitee', 'invitee')
         .select([
           'invitations.id',
           'invitations.inviteePhoneNumber',

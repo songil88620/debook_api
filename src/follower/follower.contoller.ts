@@ -21,10 +21,9 @@ export class FollowController {
   @Post(':userId')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
-    status: 204,
-    description: 'If the user is already followed do not do anything',
+    status: 400,
+    description: 'Action is done',
   })
-  @HttpCode(204)
   async followUser(@User() user: any, @Param('userId') followeeId: string) {
     await this.followService.followOne(user.uid, followeeId);
   }

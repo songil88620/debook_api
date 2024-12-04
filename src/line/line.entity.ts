@@ -2,6 +2,7 @@ import { BookEntity } from 'src/book/book.entity';
 import { LINE_TYPE } from 'src/enum';
 import { LikeEntity } from 'src/like/like.entity';
 import { LinecommentEntity } from 'src/linecomment/linecomment.entity';
+import { RatingEntity } from 'src/rating/rating.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -11,6 +12,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 
 @Entity('lines')
@@ -30,8 +32,8 @@ export class LineEntity {
   @Column({ type: 'text', nullable: true, default: null })
   description: string;
 
-  @Column({ default: 5 })
-  rating: number;
+  @OneToOne(() => RatingEntity, (ratings) => ratings.line)
+  rating: RatingEntity;
 
   @Column({ type: 'enum', enum: LINE_TYPE, default: LINE_TYPE.VIDEO })
   type: LINE_TYPE;

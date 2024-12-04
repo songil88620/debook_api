@@ -14,6 +14,7 @@ import { AchievementService } from 'src/achievement/achievement.service';
 import { ACHIEVE_TYPE, LIKE_TYPE } from 'src/enum';
 import { LikeService } from 'src/like/like.service';
 import { LoggerService } from 'src/logger/logger.service';
+import { RatingEntity } from 'src/rating/rating.entity';
 
 @Injectable()
 export class LineService {
@@ -24,6 +25,8 @@ export class LineService {
     private userRepository: Repository<UserEntity>,
     @InjectRepository(BookEntity)
     private bookRepository: Repository<BookEntity>,
+    @InjectRepository(RatingEntity)
+    private ratingRepository: Repository<RatingEntity>,
     @Inject(forwardRef(() => AchievementService))
     private achievementService: AchievementService,
     @Inject(forwardRef(() => LikeService))
@@ -47,12 +50,12 @@ export class LineService {
         },
       });
     }
+
     const new_line = {
       liner,
       book,
       description: data.description,
       type: data.type,
-      rating: data.rating,
     };
     const c = this.repository.create(new_line);
     const line = await this.repository.save(c);
@@ -109,7 +112,7 @@ export class LineService {
         type: true,
         created: true,
         updated: true,
-        rating: true,
+        // rating: true,
         likes: {
           id: true,
           userId: {

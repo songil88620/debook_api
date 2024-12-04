@@ -1,7 +1,6 @@
 import { BookEntity } from 'src/book/book.entity';
 import { RATING_TYPE } from 'src/enum';
 import { LineEntity } from 'src/line/line.entity';
-import { LinecommentEntity } from 'src/linecomment/linecomment.entity';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Entity,
@@ -10,6 +9,7 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
   ManyToOne,
+  OneToOne,
 } from 'typeorm';
 
 @Entity('ratings')
@@ -24,15 +24,13 @@ export class RatingEntity {
   })
   type: RATING_TYPE;
 
-  @ManyToOne(() => LinecommentEntity, (likeComment) => likeComment.likes, {
+  @ManyToOne(() => BookEntity, (book) => book.ratings, {
     onDelete: 'CASCADE',
   })
   bookId: BookEntity;
 
-  @ManyToOne(() => LineEntity, (likedLine) => likedLine.likes, {
-    onDelete: 'CASCADE',
-  })
-  likedLine: LineEntity;
+  @OneToOne(() => LineEntity, (line) => line.rating)
+  line: LineEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.liker)
   userId: UserEntity;

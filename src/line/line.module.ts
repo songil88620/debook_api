@@ -9,10 +9,16 @@ import { AchievementModule } from 'src/achievement/achievement.module';
 import { LineController } from './line.contoller';
 import { LikeModule } from 'src/like/like.module';
 import { LoggerModule } from 'src/logger/logger.module';
+import { RatingEntity } from 'src/rating/rating.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([LineEntity, UserEntity, BookEntity]),
+    TypeOrmModule.forFeature([
+      LineEntity,
+      UserEntity,
+      BookEntity,
+      RatingEntity,
+    ]),
     forwardRef(() => AuthModule),
     forwardRef(() => AchievementModule),
     forwardRef(() => LikeModule),

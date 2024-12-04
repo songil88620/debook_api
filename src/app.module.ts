@@ -42,6 +42,8 @@ import { LinecommentEntity } from './linecomment/linecomment.entity';
 import { LikeModule } from './like/like.module';
 import { LikeEntity } from './like/like.entity';
 import { LoggerModule } from './logger/logger.module';
+import { RatingEntity } from './rating/rating.entity';
+import { RatingModule } from './rating/rating.module';
 
 @Module({
   imports: [
@@ -67,6 +69,7 @@ import { LoggerModule } from './logger/logger.module';
         LineEntity,
         LinecommentEntity,
         LikeEntity,
+        RatingEntity,
       ],
       username: process.env.DB_USER,
       password: process.env.DB_PW,
@@ -96,6 +99,7 @@ import { LoggerModule } from './logger/logger.module';
     HomeModule,
     LinecommentModule,
     LikeModule,
+    RatingModule,
     LoggerModule,
     ThrottlerModule.forRoot([
       {

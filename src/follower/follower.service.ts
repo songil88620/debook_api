@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { FollowEntity } from './follower.entity';
@@ -27,7 +33,15 @@ export class FollowService {
 
   async followOne(followerId: string, followeeId: string) {
     if (followerId == followeeId) {
-      return;
+      throw new HttpException(
+        {
+          error: {
+            code: 'FOLLOWED_YOURSELF',
+            data: null,
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
     const followed = await this.repository.findOne({
       where: {
@@ -40,28 +54,55 @@ export class FollowService {
         follower: { firebaseId: followerId },
         followee: { firebaseId: followeeId },
       });
+      throw new HttpException(
+        {
+          success: {
+            code: 'UNFOLLOWED',
+          },
+        },
+        400,
+      );
     } else {
       const [follower, followee] = await Promise.all([
         this.userRepository.findOne({ where: { firebaseId: followerId } }),
         this.userRepository.findOne({ where: { firebaseId: followeeId } }),
       ]);
-      const new_follow: FollowCreateDto = {
-        follower,
-        followee,
-        status: true,
-      };
-      const c = this.repository.create(new_follow);
-      await this.repository.save(c);
-      // record the achievement
-      this.achievementService.achieveOne(followeeId, ACHIEVE_TYPE.FOLLOW);
-      // notify to the followee
-      const follower_name = follower.firstName + ' ' + follower.lastName;
-      this.notificationService.createNotification(
-        followerId,
-        followeeId,
-        NOTI_TYPE.FOLLOW,
-        NOTI_MESSAGES.FOLLOW_BY.replace('$NAME', follower_name),
-      );
+      if (followee && follower) {
+        const new_follow: FollowCreateDto = {
+          follower,
+          followee,
+          status: true,
+        };
+        const c = this.repository.create(new_follow);
+        await this.repository.save(c);
+        // record the achievement
+        this.achievementService.achieveOne(followeeId, ACHIEVE_TYPE.FOLLOW);
+        // notify to the followee
+        const follower_name = follower.firstName + ' ' + follower.lastName;
+        this.notificationService.createNotification(
+          followerId,
+          followeeId,
+          NOTI_TYPE.FOLLOW,
+          NOTI_MESSAGES.FOLLOW_BY.replace('$NAME', follower_name),
+        );
+        throw new HttpException(
+          {
+            success: {
+              code: 'FOLLOWED',
+            },
+          },
+          400,
+        );
+      } else {
+        throw new HttpException(
+          {
+            error: {
+              code: 'USER_DOES_NOT_EXIST',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
   }
 

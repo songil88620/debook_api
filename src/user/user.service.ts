@@ -45,9 +45,9 @@ export class UserService {
         where: { firebaseId: id },
       });
       const old_photo = old_user.photo;
-      if (old_photo != null && old_photo != user.photo) {
+      if (old_photo != null && old_photo != user.photo && user.photo == '') {
         // remove old photo file on S3
-        // this.uploadService.deleteFileOnS3(old_photo);
+        this.uploadService.deleteFileOnS3(old_photo);
       }
       await this.userRepository.update({ firebaseId: id }, user);
       const u = await this.userRepository.findOne({
