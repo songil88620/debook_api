@@ -11,8 +11,7 @@ import { ApiBody, ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { InvitaionDto, InvitationCreateDto } from './dtos';
 import { InvitationService } from './invitation.service';
-import { Tester, User } from 'src/user/user.decorator';
-import { Public } from 'src/auth/public.decorator';
+import { User } from 'src/user/user.decorator';
 
 @Controller('invitations')
 export class InvitationController {
@@ -72,13 +71,12 @@ export class InvitationController {
   }
 
   @Get()
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
+  @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 200,
     description: 'The user has invited 0 or more users',
   })
-  async getInvitations(@Tester() user: any, @Query('type') type?: string) {
+  async getInvitations(@User() user: any, @Query('type') type?: string) {
     if (type === 'target') {
       return this.invitationService.getInvitationsByPhoneNumber(
         user.phone_number,
