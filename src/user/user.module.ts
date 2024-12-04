@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
 import { UploadModule } from 'src/upload/upload.module';
 import { InvitationModule } from 'src/invitation/invitation.module';
+import { LoggerModule } from 'src/logger/logger.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { InvitationModule } from 'src/invitation/invitation.module';
     forwardRef(() => AuthModule),
     forwardRef(() => UploadModule),
     forwardRef(() => InvitationModule),
+    forwardRef(() => LoggerModule),
   ],
   controllers: [UserController],
   providers: [UserService],

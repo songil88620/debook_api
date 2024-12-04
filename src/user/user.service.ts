@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { UserCreateDto } from './dtos';
 import { InvitationService } from 'src/invitation/invitation.service';
 import { UploadService } from 'src/upload/upload.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,8 @@ export class UserService {
     private invitationService: InvitationService,
     @Inject(forwardRef(() => UploadService))
     private uploadService: UploadService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   // called when user register or user login to the app
@@ -125,13 +128,16 @@ export class UserService {
     }
 
     if (user.isPublic) {
+      this.loggerService.debug('GetUserOne', user);
       return { user };
     } else {
       if (user.followee.some((f) => f.follower.firebaseId == userid)) {
+        this.loggerService.debug('GetUserOne', user);
         return { user };
       } else {
         user.savedBook = [];
         user.savedBooklists = [];
+        this.loggerService.debug('GetUserOne', user);
         return { user };
       }
     }
