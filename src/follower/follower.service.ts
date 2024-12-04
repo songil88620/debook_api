@@ -60,7 +60,7 @@ export class FollowService {
             code: 'UNFOLLOWED',
           },
         },
-        400,
+        204,
       );
     } else {
       const [follower, followee] = await Promise.all([
@@ -91,7 +91,7 @@ export class FollowService {
               code: 'FOLLOWED',
             },
           },
-          400,
+          204,
         );
       } else {
         throw new HttpException(
