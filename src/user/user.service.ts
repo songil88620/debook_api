@@ -88,4 +88,52 @@ export class UserService {
     const user = await this.userRepository.findOne({ where: { phoneNumber } });
     return { user };
   }
+
+  async getOne(userid: string, id: string) {
+    const user = await this.userRepository.findOne({
+      relations: [
+        'invitation',
+        'savedBook',
+        'savedBooklists',
+        'followee.follower',
+        'liner',
+      ],
+      where: {
+        firebaseId: id,
+      },
+      select: {
+        firebaseId: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        isPublic: true,
+        photo: true,
+        backgroundColor: true,
+        savedBook: true,
+        savedBooklists: true,
+        followee: true,
+        liner: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException({
+        error: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+
+    if (user.isPublic) {
+      return { user };
+    } else {
+      if (user.followee.some((f) => f.follower.firebaseId == userid)) {
+        return { user };
+      } else {
+        user.savedBook = [];
+        user.savedBooklists = [];
+        return { user };
+      }
+    }
+  }
 }
