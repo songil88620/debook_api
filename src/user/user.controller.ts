@@ -33,90 +33,35 @@ export class UserController {
 
   @Get('me')
   @UseGuards(FirebaseAuthGuard)
-  @ApiResponse({
-    status: 200,
-    description: 'The user has been read successfully',
-    type: UserDto,
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'The user access token is invalid or not present',
-    schema: {
-      example: {
-        error: {
-          code: 'UNAUTHORIZED',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'The user does not have permissions for the specific action',
-    schema: {
-      example: {
-        error: {
-          code: 'FORBIDDEN',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'The user does not exists',
-    schema: {
-      example: {
-        error: {
-          code: 'NOT_FOUND',
-        },
-      },
-    },
-  })
   async me(@User() user: any) {
     return await this.userService.findUserByFirebaseId(user.uid);
   }
 
   @Get(':userId')
   @UseGuards(FirebaseAuthGuard)
-  @ApiResponse({
-    status: 200,
-    description: 'The user has been read successfully',
-    type: UserDto,
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'The user access token is invalid or not present',
-    schema: {
-      example: {
-        error: {
-          code: 'UNAUTHORIZED',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'The user does not have permissions for the specific action',
-    schema: {
-      example: {
-        error: {
-          code: 'FORBIDDEN',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'The user does not exists',
-    schema: {
-      example: {
-        error: {
-          code: 'NOT_FOUND',
-        },
-      },
-    },
-  })
-  async getOne(@User() user: any, @Param('userId') userId: string) {
+  async getOneUser(@User() user: any, @Param('userId') userId: string) {
     return await this.userService.getOne(user.uid, userId);
+  }
+
+  @Get(':userId/books')
+  @UseGuards(FirebaseAuthGuard)
+  async getOneUserBooks(@User() user: any, @Param('userId') userId: string) {
+    return await this.userService.getOneBooks(user.uid, userId);
+  }
+
+  @Get(':userId/booklists')
+  @UseGuards(FirebaseAuthGuard)
+  async getOneUserBooklists(
+    @User() user: any,
+    @Param('userId') userId: string,
+  ) {
+    return await this.userService.getOneBooklists(user.uid, userId);
+  }
+
+  @Get(':userId/lines')
+  @UseGuards(FirebaseAuthGuard)
+  async getOneUserLines(@User() user: any, @Param('userId') userId: string) {
+    return await this.userService.getOneLines(user.uid, userId);
   }
 
   @Patch(':id')

@@ -93,7 +93,7 @@ export class UserService {
   }
 
   async getOne(userid: string, id: string) {
-    const user = await this.userRepository.findOne({
+    const user: any = await this.userRepository.findOne({
       relations: [
         'invitation',
         'savedBook',
@@ -127,6 +127,15 @@ export class UserService {
       });
     }
 
+    user['savedBookCount'] = user.savedBook.length;
+    user['savedBooklistCount'] = user.savedBooklists.length;
+    user['followerCount'] = user.followee.length;
+    user['lineCount'] = user.liner.length;
+    delete user.savedBook;
+    delete user.savedBooklists;
+    delete user.followee;
+    delete user.liner;
+
     if (user.isPublic) {
       this.loggerService.debug('GetUserOne', user);
       return { user };
@@ -135,10 +144,120 @@ export class UserService {
         this.loggerService.debug('GetUserOne', user);
         return { user };
       } else {
-        user.savedBook = [];
-        user.savedBooklists = [];
+        user['savedBookCount'] = 0;
+        user['savedBooklistCount'] = 0;
+        user['followerCount'] = 0;
+        user['lineCount'] = 0;
         this.loggerService.debug('GetUserOne', user);
         return { user };
+      }
+    }
+  }
+
+  async getOneBooks(userid: string, id: string) {
+    const user = await this.userRepository.findOne({
+      relations: ['savedBook', 'followee.follower'],
+      where: {
+        firebaseId: id,
+      },
+      select: {
+        firebaseId: true,
+        isPublic: true,
+        savedBook: true,
+        followee: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException({
+        error: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+
+    if (user.isPublic) {
+      this.loggerService.debug('GetOneBooks', user.savedBook);
+      return { books: user.savedBook };
+    } else {
+      if (user.followee.some((f) => f.follower.firebaseId == userid)) {
+        this.loggerService.debug('GetOneBooks', user.savedBook);
+        return { books: user.savedBook };
+      } else {
+        this.loggerService.debug('GetOneBooks', []);
+        return { books: [] };
+      }
+    }
+  }
+
+  async getOneBooklists(userid: string, id: string) {
+    const user: any = await this.userRepository.findOne({
+      relations: ['savedBooklists', 'followee.follower'],
+      where: {
+        firebaseId: id,
+      },
+      select: {
+        firebaseId: true,
+        isPublic: true,
+        savedBooklists: true,
+        followee: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException({
+        error: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+
+    if (user.isPublic) {
+      this.loggerService.debug('GetOneBooklists', user.savedBooklists);
+      return { booklists: user.savedBooklists };
+    } else {
+      if (user.followee.some((f) => f.follower.firebaseId == userid)) {
+        this.loggerService.debug('GetOneBooklists', user.savedBooklists);
+        return { booklists: user.savedBooklists };
+      } else {
+        this.loggerService.debug('GetOneBooklists', []);
+        return { booklists: [] };
+      }
+    }
+  }
+
+  async getOneLines(userid: string, id: string) {
+    const user: any = await this.userRepository.findOne({
+      relations: ['followee.follower', 'liner'],
+      where: {
+        firebaseId: id,
+      },
+      select: {
+        firebaseId: true,
+        isPublic: true,
+        followee: true,
+        liner: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException({
+        error: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+
+    if (user.isPublic) {
+      this.loggerService.debug('GetOneLines', user.liner);
+      return { lines: user.liner };
+    } else {
+      if (user.followee.some((f) => f.follower.firebaseId == userid)) {
+        this.loggerService.debug('GetOneLines', user.liner);
+        return { lines: user.liner };
+      } else {
+        this.loggerService.debug('GetOneLines', []);
+        return { lines: [] };
       }
     }
   }
