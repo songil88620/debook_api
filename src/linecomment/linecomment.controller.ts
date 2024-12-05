@@ -12,8 +12,7 @@ export class LinecommentController {
   constructor(private linecommentService: LinecommentService) {}
 
   @Post('reply')
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
+  @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'reply a comment',
@@ -32,7 +31,7 @@ export class LinecommentController {
       },
     },
   })
-  async replyComment(@Tester() user: any, @Body() data: any) {
+  async replyComment(@User() user: any, @Body() data: any) {
     return await this.linecommentService.replyComment(
       user.uid,
       data.lineId,
@@ -42,8 +41,7 @@ export class LinecommentController {
   }
 
   @Post('likeOrUnlike')
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
+  @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'like or unlike a comment',
@@ -62,7 +60,7 @@ export class LinecommentController {
       },
     },
   })
-  async likeOrUnlikeComment(@Tester() user: any, @Body() data: any) {
+  async likeOrUnlikeComment(@User() user: any, @Body() data: any) {
     return await this.linecommentService.likeOrUnlikeComment(
       user.uid,
       data.likeId,
@@ -71,8 +69,7 @@ export class LinecommentController {
   }
 
   @Post()
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
+  @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'create a comment',
@@ -91,7 +88,7 @@ export class LinecommentController {
       },
     },
   })
-  async createComment(@Tester() user: any, @Body() data: any) {
+  async createComment(@User() user: any, @Body() data: any) {
     return await this.linecommentService.createComment(
       user.uid,
       data.lineId,

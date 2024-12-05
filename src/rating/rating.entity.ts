@@ -24,6 +24,9 @@ export class RatingEntity {
   })
   type: RATING_TYPE;
 
+  @Column({ default: 5 })
+  rate: number;
+
   @ManyToOne(() => BookEntity, (book) => book.ratings, {
     onDelete: 'CASCADE',
   })

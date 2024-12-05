@@ -11,8 +11,7 @@ import {
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { BookService } from './book.service';
-import { Tester, User } from 'src/user/user.decorator';
-import { Public } from 'src/auth/public.decorator';
+import { User } from 'src/user/user.decorator';
 
 @Controller('books')
 export class BookController {

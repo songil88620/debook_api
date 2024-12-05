@@ -79,30 +79,90 @@ export class BookService {
     page: number = 1,
     limit: number = 20,
   ) {
-    const [books, total] = await this.repository
-      .createQueryBuilder('books')
-      .take(limit)
-      .skip((page - 1) * limit)
-      .orderBy('books.updated', 'DESC')
-      .getManyAndCount();
+    const [books, total] = await this.repository.findAndCount({
+      relations: ['ratings'],
+      take: limit,
+      skip: (page - 1) * limit,
+      order: { updated: 'DESC' },
+    });
 
-    this.loggerService.debug('GetRecommendedBooks', books);
+    const bookWithRatings = books.map((book) => {
+      const totalRating = book.ratings.reduce(
+        (sum, rating) => sum + rating.rate,
+        0,
+      );
+      const averageRate = book.ratings.length
+        ? totalRating / book.ratings.length
+        : 0;
+      delete book.ratings;
+      return {
+        ...book,
+        ratingAvg: averageRate,
+      };
+    });
+
+    this.loggerService.debug('GetRecommendedBooks', bookWithRatings);
 
     const pagination = {
       page,
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
-    this.loggerService.debug('GetRecommendedBooks', books);
-    return { books, pagination };
+    return { books: bookWithRatings, pagination };
   }
 
   async getOne(userid: string, bookid: string) {
     try {
-      const book = await this.repository.findOne({ where: { id: bookid } });
+      const book: any = await this.repository.findOne({
+        where: { id: bookid },
+        relations: ['ratings'],
+        select: {
+          id: true,
+          title: true,
+          summary: true,
+          image: true,
+          file: true,
+          public: true,
+          seen: true,
+          verified: true,
+          created: true,
+          updated: true,
+          ratings: {
+            rate: true,
+            id: true,
+          },
+        },
+      });
       // if the requester is a author or book is public, return book
       // or not return error based on case
       if (book) {
+        const rateData = {
+          m1: 0,
+          m2: 0,
+          m3: 0,
+          m4: 0,
+          m5: 0,
+        };
+        let averageRate = 0;
+        book.ratings.forEach((r: any) => {
+          averageRate = averageRate + r.rate;
+          if (r.rate == 1) {
+            rateData.m1 = rateData.m1 + 1;
+          } else if (r.rate == 2) {
+            rateData.m2 = rateData.m2 + 1;
+          } else if (r.rate == 3) {
+            rateData.m3 = rateData.m3 + 1;
+          } else if (r.rate == 4) {
+            rateData.m4 = rateData.m4 + 1;
+          } else {
+            rateData.m5 = rateData.m5 + 1;
+          }
+        });
+        averageRate = averageRate / book.ratings.length;
+        book['ratingCount'] = book.ratings.length;
+        book['ratingData'] = rateData;
+        book['ratingAvg'] = averageRate.toFixed(1);
+        delete book.ratings;
         const is_author = await this.authorService.checkAuthor(bookid, userid);
         if (is_author || book.public) {
           return { book };

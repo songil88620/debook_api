@@ -92,7 +92,6 @@ export class UserEntity {
   savedBooksCount: number;
 
   @ManyToMany(() => BooklistEntity, (booklist) => booklist.saved)
-  @JoinTable()
   savedBooklists: BooklistEntity[];
 
   @ManyToMany(() => BookEntity, (booklist) => booklist.saved)

@@ -38,9 +38,6 @@ export class BookEntity {
   @Column({ default: true })
   public: boolean;
 
-  @Column({ type: 'varchar', default: '[0, 0, 0, 0, 0]', length: 100 })
-  rating: string;
-
   @Column({ default: 0 })
   seen: number;
 

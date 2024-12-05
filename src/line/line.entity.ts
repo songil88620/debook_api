@@ -13,6 +13,7 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('lines')
@@ -32,7 +33,8 @@ export class LineEntity {
   @Column({ type: 'text', nullable: true, default: null })
   description: string;
 
-  @OneToOne(() => RatingEntity, (ratings) => ratings.line)
+  @OneToOne(() => RatingEntity, (ratings) => ratings.line, { cascade: true })
+  @JoinColumn()
   rating: RatingEntity;
 
   @Column({ type: 'enum', enum: LINE_TYPE, default: LINE_TYPE.VIDEO })

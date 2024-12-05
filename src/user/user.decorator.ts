@@ -8,5 +8,5 @@ export const User = createParamDecorator(
 );
 
 export const Tester = createParamDecorator(() => {
-  return { uid: 'YMWd8ukOfbVe7jrrwq3SbEVZDs13' };
+  return { uid: 'o9WdAztNRVfL2sNtGImD9bARv592' };
 });

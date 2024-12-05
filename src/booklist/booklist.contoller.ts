@@ -24,11 +24,10 @@ import { UserDto } from 'src/user/dtos';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { BooklistCreateDto, BooklistUpdateDto } from './dtos';
 import { BooklistService } from './booklist.service';
-import { Tester, User } from 'src/user/user.decorator';
+import { User } from 'src/user/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
 import { LoggerService } from 'src/logger/logger.service';
-import { Public } from 'src/auth/public.decorator';
 
 @Controller('booklists')
 export class BooklistController {
@@ -41,8 +40,7 @@ export class BooklistController {
   ) {}
 
   @Post()
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
+  @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'The user has created successfully',
@@ -60,7 +58,7 @@ export class BooklistController {
     },
   })
   async createBookList(
-    @Tester() user: any,
+    @User() user: any,
     @Body() booklistCreateDto: BooklistCreateDto,
   ) {
     return this.booklistService.createOne(booklistCreateDto, user.uid);

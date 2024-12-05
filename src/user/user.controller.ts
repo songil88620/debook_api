@@ -43,12 +43,6 @@ export class UserController {
     return await this.userService.getOne(user.uid, userId);
   }
 
-  @Get(':userId/books')
-  @UseGuards(FirebaseAuthGuard)
-  async getOneUserBooks(@User() user: any, @Param('userId') userId: string) {
-    return await this.userService.getOneBooks(user.uid, userId);
-  }
-
   @Get(':userId/booklists')
   @UseGuards(FirebaseAuthGuard)
   async getOneUserBooklists(

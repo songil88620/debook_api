@@ -125,10 +125,14 @@ export class BooklistService {
     const [booklistResult, user_sbooklist] = await Promise.all([
       this.repository
         .createQueryBuilder('booklists')
+        .leftJoinAndSelect('booklists.books', 'books')
+        .leftJoinAndSelect('booklists.saved', 'saved')
         .where('LOWER(booklists.title) LIKE LOWER(:title)', {
           title: `%${_title}%`,
         })
         .andWhere('booklists.ownerId = :uid', { uid })
+        .loadRelationCountAndMap('booklists.bookCount', 'booklists.books')
+        .loadRelationCountAndMap('booklists.savedCount', 'booklists.saved')
         .take(limit)
         .skip((page - 1) * limit)
         .orderBy('booklists.updated', 'DESC')
@@ -155,7 +159,7 @@ export class BooklistService {
   async getOne(id: string, requester_id: string) {
     const booklist = await this.repository.findOne({
       where: { id },
-      relations: ['books'],
+      relations: ['books', 'saved'],
       select: [
         'id',
         'image',
@@ -165,6 +169,7 @@ export class BooklistService {
         'title',
         'summary',
         'books',
+        'saved',
       ],
     });
     if (booklist) {

@@ -25,8 +25,6 @@ export class LineService {
     private userRepository: Repository<UserEntity>,
     @InjectRepository(BookEntity)
     private bookRepository: Repository<BookEntity>,
-    @InjectRepository(RatingEntity)
-    private ratingRepository: Repository<RatingEntity>,
     @Inject(forwardRef(() => AchievementService))
     private achievementService: AchievementService,
     @Inject(forwardRef(() => LikeService))
@@ -36,12 +34,14 @@ export class LineService {
   ) {}
 
   async createLine(user_id: string, data: LineCreateDto) {
-    const liner = await this.userRepository.findOne({
-      where: { firebaseId: user_id },
-    });
-    const book = await this.bookRepository.findOne({
-      where: { id: data.book },
-    });
+    const [liner, book] = await Promise.all([
+      this.userRepository.findOne({
+        where: { firebaseId: user_id },
+      }),
+      this.bookRepository.findOne({
+        where: { id: data.book },
+      }),
+    ]);
     if (!book) {
       throw new BadRequestException({
         error: {
@@ -51,23 +51,33 @@ export class LineService {
       });
     }
 
+    const rating = new RatingEntity();
+    rating.bookId = book;
+    rating.userId = liner;
+    rating.rate = data.rating;
+
     const new_line = {
       liner,
       book,
       description: data.description,
       type: data.type,
+      rating: rating,
     };
     const c = this.repository.create(new_line);
     const line = await this.repository.save(c);
-    await this.achievementService.achieveOne(user_id, ACHIEVE_TYPE.LINE);
+    delete line.rating.bookId;
+    delete line.rating.userId;
+    delete line.liner;
+
+    this.achievementService.achieveOne(user_id, ACHIEVE_TYPE.LINE);
     this.loggerService.debug('CreateLine', line);
     return { line };
   }
 
   async getLines(user_id: string) {
-    const lines = await this.repository.find({
+    const lines: any[] = await this.repository.find({
       where: { liner: { firebaseId: user_id } },
-      relations: ['book', 'liner'],
+      relations: ['book', 'liner', 'rating', 'likes', 'comments'],
       select: {
         id: true,
         description: true,
@@ -88,14 +98,36 @@ export class LineService {
           photo: true,
           biography: true,
         },
+        rating: {
+          rate: true,
+        },
+        comments: {
+          id: true,
+        },
       },
     });
-    this.loggerService.debug('GetLines', lines);
-    return { lines };
+
+    const linesWithData = lines.map((line) => {
+      const commentCount = line.comments.length;
+      const rating = line.rating.rate;
+      const likeCount = line.likes.length;
+      delete line.comments;
+      delete line.rating;
+      delete line.likes;
+      return {
+        ...line,
+        likeCount,
+        rating,
+        commentCount,
+      };
+    });
+
+    this.loggerService.debug('GetLines', linesWithData);
+    return { lines: linesWithData };
   }
 
   async getLineOne(user_id: string, line_id: number) {
-    const line_one = await this.repository.findOne({
+    const line_one: any = await this.repository.findOne({
       where: { id: line_id },
       relations: [
         'liner',
@@ -105,6 +137,7 @@ export class LineService {
         'comments',
         'comments.likes',
         'comments.author',
+        'rating',
       ],
       select: {
         id: true,
@@ -112,7 +145,9 @@ export class LineService {
         type: true,
         created: true,
         updated: true,
-        // rating: true,
+        rating: {
+          rate: true,
+        },
         likes: {
           id: true,
           userId: {
@@ -155,6 +190,8 @@ export class LineService {
 
     line_one['commentCount'] = line_one.comments.length;
     line_one['likeCount'] = line_one.likes.length;
+    line_one.rating = line_one.rating.rate;
+    delete line_one.rating;
     line_one.likes = line_one.likes.splice(0, 3);
     const commentMap = new Map();
     line_one.comments.forEach((comment: any) => {

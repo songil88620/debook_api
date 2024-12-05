@@ -42,6 +42,7 @@ export class BooklistEntity {
   books: BookEntity[];
 
   @ManyToMany(() => UserEntity, (user) => user.savedBooklists)
+  @JoinTable()
   saved: UserEntity[];
 
   @OneToMany(() => CollaboratorEntity, (collaborator) => collaborator.booklist)
