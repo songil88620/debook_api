@@ -241,10 +241,13 @@ export class InvitationService {
     userId: string,
     phoneNumber: string,
   ) {
-    const invitation = await this.repository.preload({
-      id: invitationId,
-      status: INVITATION_STATUS_TYPE.PENDING,
-    });
+    const [invitation, user] = await Promise.all([
+      this.repository.preload({
+        id: invitationId,
+        status: INVITATION_STATUS_TYPE.PENDING,
+      }),
+      this.userRepository.findOne({ where: { firebaseId: userId } }),
+    ]);
 
     if (!invitation) {
       throw new BadRequestException({
@@ -281,10 +284,7 @@ export class InvitationService {
         { status: INVITATION_STATUS_TYPE.DECLINED },
       ),
 
-      this.userRepository.update(
-        { firebaseId: userId },
-        { invitation: invitation },
-      ),
+      this.repository.update({ id: invitation.id }, { invitee: user }),
 
       this.repository.findOne({
         where: { id: invitation.id },
@@ -456,21 +456,26 @@ export class InvitationService {
   async getInvitationRank() {
     const ranking = await this.repository
       .createQueryBuilder('invitations')
-      .select('invitations.invitee.firebaseId', 'inviteeId')
-      .addSelect('COUNT(invitations.invitee.firebaseId)', 'cnt')
-      .groupBy('invitations.invitee.firebaseId')
+      .select('invitations.inviter.firebaseId', 'inviterId')
+      .addSelect('COUNT(DISTINCT invitations.invitee.firebaseId)', 'cnt')
+      .addSelect('COUNT(DISTINCT savedbook.id)', 'savedBookCount')
+      .leftJoinAndSelect('invitations.inviter', 'inviter')
+      .leftJoin('inviter.savedBook', 'savedbook')
+      .where('invitations.status = :status', { status: 'accepted' })
+      .groupBy('invitations.inviter.firebaseId')
       .orderBy('cnt', 'DESC')
-      .leftJoinAndSelect('invitations.invitee', 'invitee')
       .getRawMany();
+
     const invitationRanking = ranking.map((r: any) => {
       return {
-        inviteeId: r.inviteeId,
-        firstName: r.invitee_firstName,
-        lastName: r.invitee_lastName,
-        photo: r.invitee_photo,
-        email: r.invitee_email,
-        phone: r.invitee_phoneNumber,
+        inviteeId: r.inviterId,
+        firstName: r.inviter_firstName,
+        lastName: r.inviter_lastName,
+        photo: r.inviter_photo,
+        email: r.inviter_email,
+        phone: r.inviter_phoneNumber,
         count: r.cnt,
+        savedBookCount: r.savedBookCount,
       };
     });
     return { invitationRanking };

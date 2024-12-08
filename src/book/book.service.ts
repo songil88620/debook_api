@@ -161,7 +161,7 @@ export class BookService {
         averageRate = averageRate / book.ratings.length;
         book['ratingCount'] = book.ratings.length;
         book['ratingData'] = rateData;
-        book['ratingAvg'] = averageRate.toFixed(1);
+        book['ratingAvg'] = averageRate ? averageRate.toFixed(1) : 0;
         delete book.ratings;
         const is_author = await this.authorService.checkAuthor(bookid, userid);
         if (is_author || book.public) {

@@ -142,6 +142,10 @@ export class UserEntity {
   @OneToMany(() => LikeEntity, (liker) => liker.userId)
   liker: LikeEntity[];
 
+  @JoinTable()
+  @OneToMany(() => BooklistEntity, (booklist) => booklist.ownerId)
+  booklistOwner: BooklistEntity[];
+
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;
 

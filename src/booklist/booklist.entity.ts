@@ -11,6 +11,7 @@ import {
   ManyToMany,
   OneToMany,
   Generated,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity('booklists')
@@ -28,8 +29,8 @@ export class BooklistEntity {
   @Column({ type: 'varchar', nullable: true, default: null, length: 200 })
   image: string;
 
-  @Column({ type: 'varchar', length: 36 })
-  ownerId: string;
+  @ManyToOne(() => UserEntity, (user) => user.booklistOwner)
+  ownerId: UserEntity;
 
   @Column({ default: true })
   public: boolean;

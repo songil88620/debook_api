@@ -61,7 +61,7 @@ export class BooklistService {
     const newBooklist = this.repository.create({
       books: bookEntities,
       collaborators: [user],
-      ownerId,
+      ownerId: user,
       title: data.title,
     });
 
@@ -96,15 +96,20 @@ export class BooklistService {
   }
 
   async updateOne(id: string, ownerId: string, data: BooklistUpdateDto) {
-    const booklist = await this.repository.findOne({ where: { id, ownerId } });
+    const booklist = await this.repository.findOne({
+      where: { id, ownerId: { firebaseId: ownerId } },
+    });
     if (booklist.image != null && booklist.image != data.image) {
       // remove old image on S3
       this.uploadService.deleteFileOnS3(booklist.image);
     }
     if (booklist) {
-      await this.repository.update({ id, ownerId }, data);
+      await this.repository.update(
+        { id, ownerId: { firebaseId: ownerId } },
+        data,
+      );
       const booklist = await this.repository.findOne({
-        where: { id, ownerId },
+        where: { id, ownerId: { firebaseId: ownerId } },
       });
       return { booklist };
     } else {
@@ -159,7 +164,7 @@ export class BooklistService {
   async getOne(id: string, requester_id: string) {
     const booklist = await this.repository.findOne({
       where: { id },
-      relations: ['books', 'saved'],
+      relations: ['books', 'saved', 'ownerId'],
       select: [
         'id',
         'image',
@@ -177,7 +182,7 @@ export class BooklistService {
       if (booklist.public) {
         return { booklist };
       } else {
-        if (booklist.ownerId == id) {
+        if (booklist.ownerId.firebaseId == id) {
           return { booklist };
         } else {
           // check the collaborator if the requester is in the collaborator list
@@ -207,7 +212,9 @@ export class BooklistService {
   }
 
   async deleteOne(id: string, ownerId: string) {
-    const bl = await this.repository.findOne({ where: { id, ownerId } });
+    const bl = await this.repository.findOne({
+      where: { id, ownerId: { firebaseId: ownerId } },
+    });
     if (bl) {
       await this.repository.delete({ id });
       throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
@@ -225,7 +232,7 @@ export class BooklistService {
     collaborators: string[],
   ) {
     const booklist = await this.repository.findOne({
-      where: { id: booklist_id, ownerId },
+      where: { id: booklist_id, ownerId: { firebaseId: ownerId } },
     });
     if (booklist) {
       await this.collaboratorService.inviteCollaborators(
@@ -266,7 +273,7 @@ export class BooklistService {
   async addOrRemoveBook(userid: string, booklist_id: string, bookid: string) {
     const [booklist, book] = await Promise.all([
       this.repository.findOne({
-        where: { id: booklist_id, ownerId: userid },
+        where: { id: booklist_id, ownerId: { firebaseId: userid } },
         relations: ['books'],
         select: ['id', 'books'],
       }),

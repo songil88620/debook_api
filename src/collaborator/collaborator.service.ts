@@ -35,7 +35,7 @@ export class CollaboratorService {
       where: { id: booklist_id },
     });
     const inviter = await this.userRepository.findOne({
-      where: { firebaseId: booklist.ownerId },
+      where: { firebaseId: booklist.ownerId.firebaseId },
     });
     const inviter_name = inviter.firstName + ' ' + inviter.lastName;
     const booklist_name = booklist.title;
@@ -55,7 +55,7 @@ export class CollaboratorService {
       const c = this.repository.create(new_collaborator);
       await this.repository.save(c);
       this.notificationService.createNotification(
-        booklist.ownerId,
+        booklist.ownerId.firebaseId,
         cl,
         NOTI_TYPE.COLLABORATOR,
         msg,
@@ -100,7 +100,7 @@ export class CollaboratorService {
             );
       this.notificationService.createNotification(
         collaborator_id,
-        booklist.ownerId,
+        booklist.ownerId.firebaseId,
         NOTI_TYPE.COLLABORATOR,
         msg,
       );
