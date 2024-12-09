@@ -273,7 +273,7 @@ export class InvitationService {
     invitation.status = INVITATION_STATUS_TYPE.ACCEPTED;
     await this.repository.save(invitation);
 
-    const [, , accepted_invitation] = await Promise.all([
+    const [, , , accepted_invitation] = await Promise.all([
       // A user can only accept one invitation at a time. As soon as one invitation is accepted, the rest will be declined
       this.repository.update(
         {
@@ -283,9 +283,11 @@ export class InvitationService {
         },
         { status: INVITATION_STATUS_TYPE.DECLINED },
       ),
-
       this.repository.update({ id: invitation.id }, { invitee: user }),
-
+      this.userRepository.update(
+        { firebaseId: user.firebaseId },
+        { invitation: invitation },
+      ),
       this.repository.findOne({
         where: { id: invitation.id },
         relations: ['inviter'],
