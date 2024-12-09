@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   forwardRef,
   HttpException,
@@ -12,7 +11,7 @@ import { FollowEntity } from './follower.entity';
 import { FollowCreateDto } from './dtos';
 import { UserEntity } from 'src/user/user.entity';
 import { AchievementService } from 'src/achievement/achievement.service';
-import { ACHIEVE_TYPE, NOTI_MESSAGES, NOTI_TYPE } from 'src/enum';
+import { ACHIEVE_TYPE, NOTI_TYPE } from 'src/enum';
 import { NotificationService } from 'src/notification/notification.service';
 import { LoggerService } from 'src/logger/logger.service';
 
@@ -124,6 +123,7 @@ export class FollowService {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getRecommendedFollowers(userid: string, filter: string[]) {
     const recommendedFollowers = await this.userRepository.find({
       where: {
