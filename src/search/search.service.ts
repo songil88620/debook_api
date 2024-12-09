@@ -29,12 +29,13 @@ export class SearchService {
     const [people, total] = await this.userRepository
       .createQueryBuilder('users')
       .where(
-        "LOWER(CONCAT(COALESCE(users.firstName, ''), ' ', COALESCE(users.lastName, ''))) LIKE LOWER(:keyword)",
+        "LOWER(CONCAT(COALESCE(users.firstName, ''), ' ', COALESCE(users.lastName, ''))) LIKE LOWER(:keyword) OR LOWER(users.username) LIKE LOWER(:keyword)",
         {
           keyword: `%${keyword.toLowerCase()}%`,
         },
       )
       .select([
+        'users.username',
         'users.firebaseId',
         'users.firstName',
         'users.lastName',
