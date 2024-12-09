@@ -7,11 +7,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
-import { NotificationService } from 'src/notification/notification.service';
 import { LikeEntity } from './like.entity';
-import { LIKE_TYPE } from 'src/enum';
+import { LIKE_TYPE, NOTI_TYPE } from 'src/enum';
 import { LinecommentEntity } from 'src/linecomment/linecomment.entity';
 import { LineEntity } from 'src/line/line.entity';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class LikeService {
@@ -70,12 +70,24 @@ export class LikeService {
         if (type == LIKE_TYPE.COMMENT) {
           const comment = await this.linecommentRepository.findOne({
             where: { id: like_id },
+            relations: ['line', 'line.book'],
           });
           new_like = {
             type,
             likedComment: comment,
             userId: user,
           };
+          const extra = {
+            commentId: comment.id,
+            lineId: comment.line.id,
+            linePicture: comment.line.book.image,
+          };
+          this.notificationService.createNotification(
+            user.firebaseId,
+            comment.author.firebaseId,
+            NOTI_TYPE.COMMENT_LIKE,
+            JSON.stringify(extra),
+          );
         } else if (type == LIKE_TYPE.LINE) {
           const line = await this.lineRepository.findOne({
             where: { id: like_id },

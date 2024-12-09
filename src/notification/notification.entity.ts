@@ -24,7 +24,7 @@ export class NotificationEntity {
   type: NOTI_TYPE;
 
   @Column({ type: 'text', default: null, nullable: true })
-  message: string;
+  extra: string;
 
   @Column({
     type: 'enum',

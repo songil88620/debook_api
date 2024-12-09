@@ -18,7 +18,7 @@ export class NotificationService {
     notifier: string,
     notifiee: string,
     type: NOTI_TYPE,
-    message: string,
+    extra: string,
   ) {
     const notifier_u = await this.userRepository.findOne({
       where: { firebaseId: notifier },
@@ -30,7 +30,7 @@ export class NotificationService {
       notifier: notifier_u,
       notifiee: notifiee_u,
       type,
-      message,
+      extra: extra,
       status: NOTI_STATUS_TYPE.PENDING,
     };
     const c = this.repository.create(new_notification);
@@ -60,11 +60,56 @@ export class NotificationService {
   }
 
   async getMyNotification(notifiee: string) {
-    const notifications = await this.repository.find({
+    const notifys = await this.repository.find({
       where: {
         notifiee: { firebaseId: notifiee },
         status: NOTI_STATUS_TYPE.PENDING,
       },
+      relations: ['notifier'],
+    });
+    const notifications = notifys.map((n) => {
+      if (n.type == NOTI_TYPE.COMMENT_LIKE) {
+        return {
+          createdAt: n.created,
+          notificationId: n.id,
+          type: n.type,
+          data: {
+            commentId: JSON.parse(n.extra).commentId,
+            lineId: JSON.parse(n.extra).lineId,
+            linePicture: JSON.parse(n.extra).linePicture,
+            userId: n.notifier.firebaseId,
+            username: n.notifier.username,
+            userPicture: n.notifier.photo,
+          },
+        };
+      } else if (n.type == NOTI_TYPE.COMMETN_REPLY) {
+        return {
+          createdAt: n.created,
+          notificationId: n.id,
+          type: n.type,
+          data: {
+            commentId: JSON.parse(n.extra).commentId,
+            content: JSON.parse(n.extra).content,
+            lineId: JSON.parse(n.extra).lineId,
+            userId: n.notifier.firebaseId,
+            username: n.notifier.username,
+            userPicture: n.notifier.photo,
+          },
+        };
+      } else if (n.type == NOTI_TYPE.NEW_FOLLOWER) {
+        return {
+          createdAt: n.created,
+          notificationId: n.id,
+          type: n.type,
+          data: {
+            userId: n.notifier.firebaseId,
+            username: n.notifier.username,
+            userPicture: n.notifier.photo,
+          },
+        };
+      } else {
+        return {};
+      }
     });
     return { notifications };
   }

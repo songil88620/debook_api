@@ -15,7 +15,7 @@ import { InvitaionDto } from './dtos';
 import { UserEntity } from 'src/user/user.entity';
 import { addHours, isBefore } from 'date-fns';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { NOTI_MESSAGES, NOTI_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
+import { NOTI_TYPE, INVITATION_STATUS_TYPE } from 'src/enum';
 import { NotificationService } from 'src/notification/notification.service';
 import { LoggerService } from 'src/logger/logger.service';
 
@@ -365,7 +365,7 @@ export class InvitationService {
           iv.inviter.firebaseId,
           inviteeId,
           NOTI_TYPE.INVITATION,
-          NOTI_MESSAGES.INVITATION_DECLINED,
+          '',
         );
 
         throw new HttpException(

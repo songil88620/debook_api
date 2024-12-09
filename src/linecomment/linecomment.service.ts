@@ -8,12 +8,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
-import { BookEntity } from 'src/book/book.entity';
-import { AchievementService } from 'src/achievement/achievement.service';
-import { ACHIEVE_TYPE, LIKE_TYPE } from 'src/enum';
+import { LIKE_TYPE, NOTI_TYPE } from 'src/enum';
 import { LinecommentEntity } from './linecomment.entity';
 import { LineEntity } from 'src/line/line.entity';
 import { LikeService } from 'src/like/like.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class LinecommentService {
@@ -24,10 +23,8 @@ export class LinecommentService {
     private lineRepository: Repository<LineEntity>,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-    @InjectRepository(BookEntity)
-    private bookRepository: Repository<BookEntity>,
-    @Inject(forwardRef(() => AchievementService))
-    private achievementService: AchievementService,
+    @Inject(forwardRef(() => NotificationService))
+    private notificationService: NotificationService,
     @Inject(forwardRef(() => LikeService))
     private likeService: LikeService,
   ) {}
@@ -62,9 +59,10 @@ export class LinecommentService {
     content: string,
     parent_id: number,
   ) {
-    const [user, line] = await Promise.all([
+    const [user, line, parent] = await Promise.all([
       this.userRepository.findOne({ where: { firebaseId: user_id } }),
       this.lineRepository.findOne({ where: { id: line_id } }),
+      this.repository.findOne({ where: { id: parent_id } }),
     ]);
     if (user && line) {
       const new_comment = {
@@ -75,6 +73,17 @@ export class LinecommentService {
       };
       const c = this.repository.create(new_comment);
       const comment = await this.repository.save(c);
+      const extra = {
+        commentId: comment.id,
+        content: content,
+        lindId: line_id,
+      };
+      this.notificationService.createNotification(
+        user_id,
+        parent.author.firebaseId,
+        NOTI_TYPE.COMMETN_REPLY,
+        JSON.stringify(extra),
+      );
       return { comment };
     } else {
       throw new BadRequestException({

@@ -34,15 +34,15 @@ export class CollaboratorService {
     const booklist = await this.booklistRepository.findOne({
       where: { id: booklist_id },
     });
-    const inviter = await this.userRepository.findOne({
-      where: { firebaseId: booklist.ownerId.firebaseId },
-    });
-    const inviter_name = inviter.firstName + ' ' + inviter.lastName;
-    const booklist_name = booklist.title;
-    const msg = NOTI_MESSAGES.INVITE_BOOKLIST_COLLABORATOR.replace(
-      '$NAME',
-      inviter_name,
-    ).replace('$BOOKLIST', booklist_name);
+    // const inviter = await this.userRepository.findOne({
+    //   where: { firebaseId: booklist.ownerId.firebaseId },
+    // });
+    // const inviter_name = inviter.firstName + ' ' + inviter.lastName;
+    // const booklist_name = booklist.title;
+    // const msg = NOTI_MESSAGES.INVITE_BOOKLIST_COLLABORATOR.replace(
+    //   '$NAME',
+    //   inviter_name,
+    // ).replace('$BOOKLIST', booklist_name);
 
     for (const cl of collaborators) {
       const user = await this.userRepository.findOne({
@@ -58,7 +58,7 @@ export class CollaboratorService {
         booklist.ownerId.firebaseId,
         cl,
         NOTI_TYPE.COLLABORATOR,
-        msg,
+        '',
       );
     }
   }
@@ -87,22 +87,22 @@ export class CollaboratorService {
       const booklist = await this.booklistRepository.findOne({
         where: { id: booklist_id },
       });
-      const collaborator_name = cl.user.firstName + ' ' + cl.user.lastName;
-      const msg =
-        status == true
-          ? NOTI_MESSAGES.ACCEPT_BOOKLIST_COLLABORATOR.replace(
-              '$NAME',
-              collaborator_name,
-            )
-          : NOTI_MESSAGES.REJECT_BOOKLIST_COLLABORATOR.replace(
-              '$NAME',
-              collaborator_name,
-            );
+      // const collaborator_name = cl.user.firstName + ' ' + cl.user.lastName;
+      // const msg =
+      //   status == true
+      //     ? NOTI_MESSAGES.ACCEPT_BOOKLIST_COLLABORATOR.replace(
+      //         '$NAME',
+      //         collaborator_name,
+      //       )
+      //     : NOTI_MESSAGES.REJECT_BOOKLIST_COLLABORATOR.replace(
+      //         '$NAME',
+      //         collaborator_name,
+      //       );
       this.notificationService.createNotification(
         collaborator_id,
         booklist.ownerId.firebaseId,
         NOTI_TYPE.COLLABORATOR,
-        msg,
+        '',
       );
     } else {
       throw new HttpException(
