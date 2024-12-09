@@ -38,55 +38,34 @@ export class BookService {
     page: number = 1,
     limit: number = 20,
   ) {
-    const [booksResult, userBook] = await Promise.all([
-      this.repository
-        .createQueryBuilder('books')
-        .leftJoinAndSelect('books.authors', 'authors')
-        .leftJoinAndSelect('authors.user', 'user')
-        .where('books.title LIKE :title', {
-          title: `%${title}%`,
-        })
-        .orWhere('user.firstName LIKE :firstName', {
-          firstName: `%${author}%`,
-        })
-        .orWhere('user.lastName LIKE :lastName', {
-          lastName: `%${author}%`,
-        })
-        .take(limit)
-        .skip((page - 1) * limit)
-        .orderBy('books.updated', 'DESC')
-        .getManyAndCount(),
-
-      this.userRepository.findOne({
-        where: { firebaseId: saver_id },
-        relations: ['savedBook'],
-      }),
-    ]);
+    const booksResult = await this.repository
+      .createQueryBuilder('books')
+      .leftJoin('books.authors', 'authors')
+      .leftJoin('authors.user', 'user')
+      .leftJoin('books.booklists', 'booklist')
+      .leftJoinAndSelect('books.saved', 'saved')
+      .leftJoin('books.lines', 'lines')
+      .leftJoinAndSelect('books.ratings', 'ratings')
+      .where('books.title LIKE :title', {
+        title: `%${title}%`,
+      })
+      .orWhere('user.firstName LIKE :firstName', {
+        firstName: `%${author}%`,
+      })
+      .orWhere('user.lastName LIKE :lastName', {
+        lastName: `%${author}%`,
+      })
+      .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
+      .loadRelationCountAndMap('books.lineCount', 'books.lines')
+      .loadRelationCountAndMap('books.ratingCount', 'books.ratings')
+      .take(limit)
+      .skip((page - 1) * limit)
+      .orderBy('books.updated', 'DESC')
+      .getManyAndCount();
 
     const [books, total] = booksResult;
-    this.loggerService.debug('GetBooks', books);
 
-    const pagination = {
-      page,
-      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
-      limit,
-    };
-    return { books, savedBooks: userBook?.savedBook, pagination };
-  }
-
-  async getRecommendedBooks(
-    saver_id: string,
-    page: number = 1,
-    limit: number = 20,
-  ) {
-    const [books, total] = await this.repository.findAndCount({
-      relations: ['ratings'],
-      take: limit,
-      skip: (page - 1) * limit,
-      order: { updated: 'DESC' },
-    });
-
-    const bookWithRatings = books.map((book) => {
+    const bookWithData = books.map((book) => {
       const totalRating = book.ratings.reduce(
         (sum, rating) => sum + rating.rate,
         0,
@@ -94,28 +73,82 @@ export class BookService {
       const averageRate = book.ratings.length
         ? totalRating / book.ratings.length
         : 0;
+      const savedCount = book.saved.length;
       delete book.ratings;
+      delete book.saved;
       return {
         ...book,
         ratingAvg: averageRate,
+        savedCount,
       };
     });
 
-    this.loggerService.debug('GetRecommendedBooks', bookWithRatings);
+    this.loggerService.debug('GetBooks', bookWithData);
 
     const pagination = {
       page,
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
-    return { books: bookWithRatings, pagination };
+    return { books: bookWithData, pagination };
+  }
+
+  async getRecommendedBooks(
+    saver_id: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
+    const booksResult = await this.repository
+      .createQueryBuilder('books')
+      .leftJoin('books.authors', 'authors')
+      .leftJoin('authors.user', 'user')
+      .leftJoin('books.booklists', 'booklist')
+      .leftJoinAndSelect('books.saved', 'saved')
+      .leftJoin('books.lines', 'lines')
+      .leftJoinAndSelect('books.ratings', 'ratings')
+      .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
+      .loadRelationCountAndMap('books.lineCount', 'books.lines')
+      .loadRelationCountAndMap('books.ratingCount', 'books.ratings')
+      .take(limit)
+      .skip((page - 1) * limit)
+      .orderBy('books.updated', 'DESC')
+      .getManyAndCount();
+
+    const [books, total] = booksResult;
+
+    const bookWithData = books.map((book) => {
+      const totalRating = book.ratings.reduce(
+        (sum, rating) => sum + rating.rate,
+        0,
+      );
+      const averageRate = book.ratings.length
+        ? totalRating / book.ratings.length
+        : 0;
+      const savedCount = book.saved.length;
+      delete book.ratings;
+      delete book.saved;
+      return {
+        ...book,
+        ratingAvg: averageRate,
+        savedCount,
+      };
+    });
+
+    this.loggerService.debug('GetBooks', bookWithData);
+
+    const pagination = {
+      page,
+      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+      limit,
+    };
+    return { books: bookWithData, pagination };
   }
 
   async getOne(userid: string, bookid: string) {
     try {
       const book: any = await this.repository.findOne({
         where: { id: bookid },
-        relations: ['ratings'],
+        relations: ['ratings', 'lines', 'booklists'],
         select: {
           id: true,
           title: true,
@@ -131,6 +164,8 @@ export class BookService {
             rate: true,
             id: true,
           },
+          lines: true,
+          booklists: true,
         },
       });
       // if the requester is a author or book is public, return book
@@ -162,6 +197,10 @@ export class BookService {
         book['ratingCount'] = book.ratings.length;
         book['ratingData'] = rateData;
         book['ratingAvg'] = averageRate ? averageRate.toFixed(1) : 0;
+        book['lineCount'] = book.lines.length;
+        book['booklistCount'] = book.booklists.length;
+        delete book.lines;
+        delete book.booklists;
         delete book.ratings;
         const is_author = await this.authorService.checkAuthor(bookid, userid);
         if (is_author || book.public) {

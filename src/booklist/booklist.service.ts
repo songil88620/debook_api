@@ -127,26 +127,31 @@ export class BooklistService {
     limit: number = 20,
   ) {
     const _title = title == '' ? title : title.toLowerCase();
-    const [booklistResult, user_sbooklist] = await Promise.all([
-      this.repository
-        .createQueryBuilder('booklists')
-        .leftJoinAndSelect('booklists.books', 'books')
-        .leftJoinAndSelect('booklists.saved', 'saved')
-        .where('LOWER(booklists.title) LIKE LOWER(:title)', {
-          title: `%${_title}%`,
-        })
-        .andWhere('booklists.ownerId = :uid', { uid })
-        .loadRelationCountAndMap('booklists.bookCount', 'booklists.books')
-        .loadRelationCountAndMap('booklists.savedCount', 'booklists.saved')
-        .take(limit)
-        .skip((page - 1) * limit)
-        .orderBy('booklists.updated', 'DESC')
-        .getManyAndCount(),
-      this.userRepository.findOne({
-        where: { firebaseId: uid },
-        relations: ['savedBooklists'],
-      }),
-    ]);
+    const booklistResult = await this.repository
+      .createQueryBuilder('booklists')
+      // .leftJoinAndSelect('booklists.books', 'books')
+      .leftJoin('booklists.saved', 'saved')
+      .leftJoin('booklists.ownerId', 'owner')
+      .addSelect([
+        'owner.firebaseId',
+        'owner.firstName',
+        'owner.lastName',
+        'owner.photo',
+        'owner.biography',
+        'owner.username',
+      ])
+      .where('LOWER(booklists.title) LIKE LOWER(:title)', {
+        title: `%${_title}%`,
+      })
+      .andWhere('(booklists.ownerId = :uid OR saved.firebaseId = :uid)', {
+        uid,
+      })
+      .loadRelationCountAndMap('booklists.bookCount', 'booklists.books')
+      .loadRelationCountAndMap('booklists.savedCount', 'booklists.saved')
+      .take(limit)
+      .skip((page - 1) * limit)
+      .orderBy('booklists.updated', 'DESC')
+      .getManyAndCount();
     const [booklist, total] = booklistResult;
     const pagination = {
       page,
@@ -157,7 +162,6 @@ export class BooklistService {
     return {
       booklist,
       pagination,
-      savedBooklists: user_sbooklist?.savedBooklists,
     };
   }
 
