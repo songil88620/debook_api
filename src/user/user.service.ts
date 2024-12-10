@@ -75,14 +75,13 @@ export class UserService {
     }
   }
 
-  async findUserByFirebaseId(id: string) {
+  async getMe(id: string) {
     const user = await this.userRepository.findOne({
-      relations: ['invitation'],
+      relations: ['invitation', 'savedBook', 'followee'],
       where: {
         firebaseId: id,
       },
     });
-
     if (!user) {
       throw new NotFoundException({
         error: {
@@ -90,7 +89,28 @@ export class UserService {
         },
       });
     }
+    const savedBooksCount = user.savedBook.length;
+    const followersCount = user.followee.length;
+    delete user.savedBook;
+    delete user.followee;
+    return {
+      user: { ...user, savedBooksCount, followersCount },
+    };
+  }
 
+  async findUserByFirebaseId(id: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        firebaseId: id,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException({
+        error: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
     return {
       user,
     };

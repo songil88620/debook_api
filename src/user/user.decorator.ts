@@ -9,12 +9,12 @@ export const User = createParamDecorator(
 
 export const Tester = createParamDecorator(() => {
   // return { uid: 'o9WdAztNRVfL2sNtGImD9bARv592' };
-  // return {
-  //   uid: 'o9WdAztNRVfL2sNtGImD9bARv588',
-  //   phone_number: '+8615604034323',
-  // };
   return {
-    uid: '2zwWN6vfcEQ12elcPgAa62nh5WV1',
+    uid: 'o9WdAztNRVfL2sNtGImD9bARv588',
+    phone_number: '+8615604034323',
+  };
+  return {
+    uid: '2zwWN6vfcEQ12elcPgAa62nh5WV2',
     phone_number: '+16555551234',
   };
 });
