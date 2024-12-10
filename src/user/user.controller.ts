@@ -33,16 +33,15 @@ export class UserController {
   ) {}
 
   @Get('me')
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
-  async me(@Tester() user: any) {
+  @UseGuards(FirebaseAuthGuard)
+  // @Public()
+  async me(@User() user: any) {
     return await this.userService.getMe(user.uid);
   }
 
   @Get(':userId')
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
-  async getOneUser(@Tester() user: any, @Param('userId') userId: string) {
+  @UseGuards(FirebaseAuthGuard)
+  async getOneUser(@User() user: any, @Param('userId') userId: string) {
     return await this.userService.getOne(user.uid, userId);
   }
 
