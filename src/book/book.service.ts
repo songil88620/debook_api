@@ -13,6 +13,7 @@ import axios from 'axios';
 import { uuid } from 'uuidv4';
 import { UserEntity } from 'src/user/user.entity';
 import { LoggerService } from 'src/logger/logger.service';
+import { AuthorEntity } from 'src/author/author.entity';
 
 @Injectable()
 export class BookService {
@@ -20,6 +21,8 @@ export class BookService {
     @InjectRepository(BookEntity) private repository: Repository<BookEntity>,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+    @InjectRepository(AuthorEntity)
+    private authorRepository: Repository<AuthorEntity>,
     @Inject(forwardRef(() => AuthorService))
     private authorService: AuthorService,
     @Inject(forwardRef(() => LoggerService))
@@ -212,6 +215,14 @@ export class BookService {
         book['ratingAvg'] = averageRate ? averageRate.toFixed(1) : 0;
         book['lineCount'] = book.lines.length;
         book['booklistCount'] = book.booklists.length;
+        book['authors'] = [
+          {
+            id: 'xxx',
+            name: 'Elon Musk',
+            photo:
+              'https://debook-user-data.s3.eu-north-1.amazonaws.com/avatar/QDP0fbZdGjhVmtRGU3PxlXXjzt43.1732871567182.jpg',
+          },
+        ];
         delete book.lines;
         delete book.booklists;
         delete book.ratings;
