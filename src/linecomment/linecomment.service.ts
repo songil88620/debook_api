@@ -62,7 +62,10 @@ export class LinecommentService {
     const [user, line, parent] = await Promise.all([
       this.userRepository.findOne({ where: { firebaseId: user_id } }),
       this.lineRepository.findOne({ where: { id: line_id } }),
-      this.repository.findOne({ where: { id: parent_id } }),
+      this.repository.findOne({
+        where: { id: parent_id },
+        relations: ['author'],
+      }),
     ]);
     if (user && line) {
       const new_comment = {

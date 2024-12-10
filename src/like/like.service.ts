@@ -70,7 +70,7 @@ export class LikeService {
         if (type == LIKE_TYPE.COMMENT) {
           const comment = await this.linecommentRepository.findOne({
             where: { id: like_id },
-            relations: ['line', 'line.book'],
+            relations: ['line', 'line.book', 'author'],
           });
           new_like = {
             type,
