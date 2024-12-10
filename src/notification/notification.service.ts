@@ -67,50 +67,54 @@ export class NotificationService {
       },
       relations: ['notifier'],
     });
-    const notifications = notifys.map((n) => {
-      if (n.type == NOTI_TYPE.COMMENT_LIKE) {
-        return {
-          createdAt: n.created,
-          notificationId: n.id,
-          type: n.type,
-          data: {
-            commentId: JSON.parse(n.extra).commentId,
-            lineId: JSON.parse(n.extra).lineId,
-            linePicture: JSON.parse(n.extra).linePicture,
-            userId: n.notifier.firebaseId,
-            username: n.notifier.username,
-            userPicture: n.notifier.photo,
-          },
-        };
-      } else if (n.type == NOTI_TYPE.COMMETN_REPLY) {
-        return {
-          createdAt: n.created,
-          notificationId: n.id,
-          type: n.type,
-          data: {
-            commentId: JSON.parse(n.extra).commentId,
-            content: JSON.parse(n.extra).content,
-            lineId: JSON.parse(n.extra).lineId,
-            userId: n.notifier.firebaseId,
-            username: n.notifier.username,
-            userPicture: n.notifier.photo,
-          },
-        };
-      } else if (n.type == NOTI_TYPE.NEW_FOLLOWER) {
-        return {
-          createdAt: n.created,
-          notificationId: n.id,
-          type: n.type,
-          data: {
-            userId: n.notifier.firebaseId,
-            username: n.notifier.username,
-            userPicture: n.notifier.photo,
-          },
-        };
-      } else {
-        return {};
-      }
-    });
-    return { notifications };
+    if (notifys) {
+      const notifications = notifys.map((n) => {
+        if (n.type == NOTI_TYPE.COMMENT_LIKE) {
+          return {
+            createdAt: n.created,
+            notificationId: n.id,
+            type: n.type,
+            data: {
+              commentId: JSON.parse(n.extra).commentId,
+              lineId: JSON.parse(n.extra).lineId,
+              linePicture: JSON.parse(n.extra).linePicture,
+              userId: n.notifier.firebaseId,
+              username: n.notifier.username,
+              userPicture: n.notifier.photo,
+            },
+          };
+        } else if (n.type == NOTI_TYPE.COMMETN_REPLY) {
+          return {
+            createdAt: n.created,
+            notificationId: n.id,
+            type: n.type,
+            data: {
+              commentId: JSON.parse(n.extra).commentId,
+              content: JSON.parse(n.extra).content,
+              lineId: JSON.parse(n.extra).lineId,
+              userId: n.notifier.firebaseId,
+              username: n.notifier.username,
+              userPicture: n.notifier.photo,
+            },
+          };
+        } else if (n.type == NOTI_TYPE.NEW_FOLLOWER) {
+          return {
+            createdAt: n.created,
+            notificationId: n.id,
+            type: n.type,
+            data: {
+              userId: n.notifier.firebaseId,
+              username: n.notifier.username,
+              userPicture: n.notifier.photo,
+            },
+          };
+        } else {
+          return {};
+        }
+      });
+      return { notifications };
+    } else {
+      return { notifications: [] };
+    }
   }
 }

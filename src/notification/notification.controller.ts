@@ -14,7 +14,7 @@ export class NotificationController {
     status: 200,
     description: '',
   })
-  async followUser(@User() user: any) {
+  async getMyNotification(@User() user: any) {
     return await this.notificationService.getMyNotification(user.uid);
   }
 
