@@ -77,7 +77,7 @@ export class UserService {
 
   async getMe(id: string) {
     const user = await this.userRepository.findOne({
-      relations: ['invitation', 'savedBook', 'followee'],
+      relations: ['invitation', 'savedBook', 'followee', 'savedBooklists'],
       where: {
         firebaseId: id,
       },
@@ -91,10 +91,11 @@ export class UserService {
     }
     const savedBookCount = user.savedBook.length;
     const followerCount = user.followee.length;
+    const savedBooklistCount = user.savedBooklists.length;
     delete user.savedBook;
     delete user.followee;
     return {
-      user: { ...user, savedBookCount, followerCount },
+      user: { ...user, savedBookCount, followerCount, savedBooklistCount },
     };
   }
 
