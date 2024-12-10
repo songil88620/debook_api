@@ -148,7 +148,7 @@ export class BookService {
     try {
       const book: any = await this.repository.findOne({
         where: { id: bookid },
-        relations: ['ratings', 'lines', 'booklists'],
+        relations: ['ratings', 'lines', 'booklists', 'authors'],
         select: {
           id: true,
           title: true,
@@ -166,6 +166,19 @@ export class BookService {
           },
           lines: true,
           booklists: true,
+          authors: {
+            user: {
+              firebaseId: true,
+              firstName: true,
+              lastName: true,
+              photo: true,
+              biography: true,
+              username: true,
+            },
+            verified: true,
+            id: true,
+            created: true,
+          },
         },
       });
       // if the requester is a author or book is public, return book

@@ -21,7 +21,8 @@ import { UserDto, UserUpdateDto } from 'src/user/dtos';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
-import { User } from './user.decorator';
+import { Tester, User } from './user.decorator';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('users')
 export class UserController {
@@ -32,14 +33,16 @@ export class UserController {
   ) {}
 
   @Get('me')
-  @UseGuards(FirebaseAuthGuard)
-  async me(@User() user: any) {
+  // @UseGuards(FirebaseAuthGuard)
+  @Public()
+  async me(@Tester() user: any) {
     return await this.userService.getMe(user.uid);
   }
 
   @Get(':userId')
-  @UseGuards(FirebaseAuthGuard)
-  async getOneUser(@User() user: any, @Param('userId') userId: string) {
+  // @UseGuards(FirebaseAuthGuard)
+  @Public()
+  async getOneUser(@Tester() user: any, @Param('userId') userId: string) {
     return await this.userService.getOne(user.uid, userId);
   }
 

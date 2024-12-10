@@ -141,6 +141,7 @@ export class UserService {
         username: true,
         isPublic: true,
         photo: true,
+        invitationsRemainingCount: true,
         backgroundColor: true,
         savedBook: true,
         savedBooklists: true,
