@@ -45,6 +45,7 @@ import { LoggerModule } from './logger/logger.module';
 import { RatingEntity } from './rating/rating.entity';
 import { RatingModule } from './rating/rating.module';
 import { RedirectModule } from 'src/redirects/redirect.module';
+import { MagickeyModule } from './magickey/magickey.module';
 
 @Module({
   imports: [
@@ -103,6 +104,7 @@ import { RedirectModule } from 'src/redirects/redirect.module';
     LikeModule,
     RatingModule,
     LoggerModule,
+    MagickeyModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60,
