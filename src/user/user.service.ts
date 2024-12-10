@@ -82,7 +82,8 @@ export class UserService {
         'savedBook',
         'followee',
         'savedBooklists',
-        'liner',
+        'lines',
+        'lines.book',
       ],
       where: {
         firebaseId: id,
@@ -98,7 +99,7 @@ export class UserService {
     const savedBookCount = user.savedBook.length;
     const followerCount = user.followee.length;
     const savedBooklistCount = user.savedBooklists.length;
-    const lineCount = user.liner.length;
+    const lineCount = user.lines.length;
     delete user.savedBook;
     delete user.followee;
     return {
@@ -112,29 +113,6 @@ export class UserService {
     };
   }
 
-  async findUserByFirebaseId(id: string) {
-    const user = await this.userRepository.findOne({
-      where: {
-        firebaseId: id,
-      },
-    });
-    if (!user) {
-      throw new NotFoundException({
-        error: {
-          code: 'NOT_FOUND',
-        },
-      });
-    }
-    return {
-      user,
-    };
-  }
-
-  async findUserByPhone(phoneNumber: string) {
-    const user = await this.userRepository.findOne({ where: { phoneNumber } });
-    return { user };
-  }
-
   async getOne(userid: string, id: string) {
     const user: any = await this.userRepository.findOne({
       relations: [
@@ -142,7 +120,8 @@ export class UserService {
         'savedBook',
         'savedBooklists',
         'followee.follower',
-        'liner',
+        'lines',
+        'lines.book',
       ],
       where: {
         firebaseId: id,
@@ -159,7 +138,7 @@ export class UserService {
         savedBook: true,
         savedBooklists: true,
         followee: true,
-        liner: true,
+        lines: true,
       },
     });
 
@@ -174,11 +153,11 @@ export class UserService {
     user['savedBookCount'] = user.savedBook.length;
     user['savedBooklistCount'] = user.savedBooklists.length;
     user['followerCount'] = user.followee.length;
-    user['lineCount'] = user.liner.length;
+    user['lineCount'] = user.lines.length;
     delete user.savedBook;
-    delete user.savedBooklists;
+    //delete user.savedBooklists;
     delete user.followee;
-    delete user.liner;
+    //delete user.lines;
 
     if (user.isPublic) {
       this.loggerService.debug('GetUserOne', user);
@@ -198,7 +177,7 @@ export class UserService {
     }
   }
 
-  async getOneBooklists(userid: string, id: string) {
+  async getOneUserBooklists(userid: string, id: string) {
     const [user, booklists] = await Promise.all([
       this.userRepository.findOne({
         relations: ['followee.follower'],
@@ -260,7 +239,7 @@ export class UserService {
     }
   }
 
-  async getOneLines(userid: string, id: string) {
+  async getOneUserLines(userid: string, id: string) {
     const [user, lines] = await Promise.all([
       this.userRepository.findOne({
         relations: ['followee.follower'],
@@ -314,5 +293,23 @@ export class UserService {
         return { lines: [] };
       }
     }
+  }
+
+  async findUserByFirebaseId(id: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        firebaseId: id,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException({
+        error: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+    return {
+      user,
+    };
   }
 }

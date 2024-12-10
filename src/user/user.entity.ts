@@ -40,9 +40,6 @@ export class UserEntity {
   @Index({ fulltext: true })
   firstName: string;
 
-  @Column({ default: 0 })
-  followersCount: number;
-
   @OneToOne(() => InvitationEntity, (invitation) => invitation.user, {
     nullable: true,
     cascade: true,
@@ -132,7 +129,7 @@ export class UserEntity {
 
   @JoinTable()
   @OneToMany(() => LineEntity, (liner) => liner.liner)
-  liner: LineEntity[];
+  lines: LineEntity[];
 
   @JoinTable()
   @OneToMany(() => LinecommentEntity, (linecomment) => linecomment.author)

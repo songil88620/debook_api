@@ -21,7 +21,7 @@ export class LineEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.liner, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, (user) => user.lines, { onDelete: 'CASCADE' })
   liner: UserEntity;
 
   @ManyToOne(() => BookEntity, (book) => book.lines, { onDelete: 'CASCADE' })

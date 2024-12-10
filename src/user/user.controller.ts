@@ -49,13 +49,13 @@ export class UserController {
     @User() user: any,
     @Param('userId') userId: string,
   ) {
-    return await this.userService.getOneBooklists(user.uid, userId);
+    return await this.userService.getOneUserBooklists(user.uid, userId);
   }
 
   @Get(':userId/lines')
   @UseGuards(FirebaseAuthGuard)
   async getOneUserLines(@User() user: any, @Param('userId') userId: string) {
-    return await this.userService.getOneLines(user.uid, userId);
+    return await this.userService.getOneUserLines(user.uid, userId);
   }
 
   @Patch(':id')
