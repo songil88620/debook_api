@@ -89,12 +89,12 @@ export class UserService {
         },
       });
     }
-    const savedBooksCount = user.savedBook.length;
-    const followersCount = user.followee.length;
+    const savedBookCount = user.savedBook.length;
+    const followerCount = user.followee.length;
     delete user.savedBook;
     delete user.followee;
     return {
-      user: { ...user, savedBooksCount, followersCount },
+      user: { ...user, savedBookCount, followerCount },
     };
   }
 

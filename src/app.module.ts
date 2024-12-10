@@ -44,6 +44,7 @@ import { LikeEntity } from './like/like.entity';
 import { LoggerModule } from './logger/logger.module';
 import { RatingEntity } from './rating/rating.entity';
 import { RatingModule } from './rating/rating.module';
+import { RedirectModule } from 'src/redirects/redirect.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { RatingModule } from './rating/rating.module';
       // },
     }),
     ScheduleModule.forRoot(),
+    RedirectModule,
     UserModule,
     AuthModule,
     PassportModule,
