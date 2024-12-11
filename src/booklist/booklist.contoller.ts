@@ -200,8 +200,13 @@ export class BooklistController {
     @Query('title') title?: string,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('include') include?: string,
   ) {
-    return this.booklistService.getList(user.uid, title, page, limit);
+    if (include == 'books') {
+      return this.booklistService.getBooks(user.uid);
+    } else {
+      return this.booklistService.getList(user.uid, title, page, limit);
+    }
   }
 
   @Delete(':id')

@@ -215,6 +215,48 @@ export class BooklistService {
     }
   }
 
+  async getBooks(user_id: string) {
+    const booklists = await this.repository
+      .createQueryBuilder('booklists')
+      .leftJoinAndSelect('booklists.books', 'books')
+      .leftJoinAndSelect('books.lines', 'lines')
+      .leftJoinAndSelect('books.saved', 'saved')
+      .leftJoinAndSelect('books.ratings', 'ratings')
+      .leftJoinAndSelect('books.booklists', 'relatedBooklists')
+      .where('booklists.ownerId = :user_id', { user_id })
+      .groupBy('books.id')
+      .getMany();
+
+    const books = booklists.flatMap((list) => {
+      return list.books.map((book) => {
+        const totalRating = book.ratings.reduce(
+          (sum, rating) => sum + rating.rate,
+          0,
+        );
+        const averageRate = book.ratings.length
+          ? totalRating / book.ratings.length
+          : 0;
+        const savedCount = book.saved.length;
+        const lineCount = book.lines.length;
+        const ratingCount = book.ratings.length;
+        const booklistCount = book.booklists.length;
+        delete book.saved;
+        delete book.ratings;
+        delete book.lines;
+        delete book.booklists;
+        return {
+          ...book,
+          averageRate,
+          savedCount,
+          lineCount,
+          ratingCount,
+          booklistCount,
+        };
+      });
+    });
+    return { books };
+  }
+
   async deleteOne(id: string, ownerId: string) {
     const bl = await this.repository.findOne({
       where: { id, ownerId: { firebaseId: ownerId } },
