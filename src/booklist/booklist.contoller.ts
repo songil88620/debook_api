@@ -202,11 +202,11 @@ export class BooklistController {
     @Query('limit') limit?: number,
     @Query('include') include?: string,
   ) {
-    if (include == 'books') {
-      return this.booklistService.getBooks(user.uid);
-    } else {
-      return this.booklistService.getList(user.uid, title, page, limit);
-    }
+    return this.booklistService.getList(user.uid, title, page, limit, include);
+    // if (include == 'books') {
+    //   return this.booklistService.getBooks(user.uid);
+    // } else {
+    // }
   }
 
   @Delete(':id')

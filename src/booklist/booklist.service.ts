@@ -125,9 +125,10 @@ export class BooklistService {
     title: string = '',
     page: number = 1,
     limit: number = 20,
+    include: string = '',
   ) {
     const _title = title == '' ? title : title.toLowerCase();
-    const booklistResult = await this.repository
+    const booklisQuery = await this.repository
       .createQueryBuilder('booklists')
       // .leftJoinAndSelect('booklists.books', 'books')
       .leftJoin('booklists.saved', 'saved')
@@ -150,8 +151,17 @@ export class BooklistService {
       .loadRelationCountAndMap('booklists.savedCount', 'booklists.saved')
       .take(limit)
       .skip((page - 1) * limit)
-      .orderBy('booklists.updated', 'DESC')
-      .getManyAndCount();
+      .orderBy('booklists.updated', 'DESC');
+
+    if (include == 'books') {
+      booklisQuery
+        .leftJoinAndSelect('booklists.books', 'books')
+        .loadRelationCountAndMap('books.ratingCount', 'books.ratings')
+        .loadRelationCountAndMap('books.savedCount', 'books.saved')
+        .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
+        .loadRelationCountAndMap('books.lineCount', 'books.lines');
+    }
+    const booklistResult = await booklisQuery.getManyAndCount();
     const [booklist, total] = booklistResult;
     const pagination = {
       page,
