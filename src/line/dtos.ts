@@ -20,4 +20,9 @@ export class LineCreateDto {
   @ApiProperty({ description: 'rating' })
   @IsNumber()
   rating: number;
+
+  @ApiProperty({ description: 'file' })
+  @IsString()
+  @IsOptional()
+  file: string;
 }

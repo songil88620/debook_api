@@ -15,9 +15,13 @@ import { ACHIEVE_TYPE, LIKE_TYPE } from 'src/enum';
 import { LikeService } from 'src/like/like.service';
 import { LoggerService } from 'src/logger/logger.service';
 import { RatingEntity } from 'src/rating/rating.entity';
+import axios from 'axios';
 
 @Injectable()
 export class LineService {
+  private compressorUrl =
+    'https://di7613il5e.execute-api.eu-north-1.amazonaws.com/dev/compressVideo';
+
   constructor(
     @InjectRepository(LineEntity)
     private repository: Repository<LineEntity>,
@@ -33,7 +37,7 @@ export class LineService {
     private loggerService: LoggerService,
   ) {}
 
-  async createLine(user_id: string, data: LineCreateDto) {
+  async createLine(user_id: string, data: LineCreateDto, inPath: string) {
     const [liner, book] = await Promise.all([
       this.userRepository.findOne({
         where: { firebaseId: user_id },
@@ -62,6 +66,7 @@ export class LineService {
       description: data.description,
       type: data.type,
       rating: rating,
+      file: data.file,
     };
     const c = this.repository.create(new_line);
     const line = await this.repository.save(c);
@@ -71,6 +76,14 @@ export class LineService {
 
     this.achievementService.achieveOne(user_id, ACHIEVE_TYPE.LINE);
     this.loggerService.debug('CreateLine', line);
+
+    // compress uploaded video by calling this compressor
+    // no need to wait
+    axios.post(this.compressorUrl, {
+      inPath: `debook-user-data/${inPath}`,
+      outPath: inPath,
+    });
+
     return { line };
   }
 

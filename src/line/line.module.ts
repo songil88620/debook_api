@@ -10,6 +10,7 @@ import { LineController } from './line.contoller';
 import { LikeModule } from 'src/like/like.module';
 import { LoggerModule } from 'src/logger/logger.module';
 import { RatingEntity } from 'src/rating/rating.entity';
+import { UploadModule } from 'src/upload/upload.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { RatingEntity } from 'src/rating/rating.entity';
     forwardRef(() => AchievementModule),
     forwardRef(() => LikeModule),
     forwardRef(() => LoggerModule),
+    forwardRef(() => UploadModule),
   ],
   controllers: [LineController],
   providers: [LineService],

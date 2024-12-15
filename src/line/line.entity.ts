@@ -33,6 +33,9 @@ export class LineEntity {
   @Column({ type: 'text', nullable: true, default: null })
   description: string;
 
+  @Column({ type: 'text', default: null, nullable: true })
+  file: string;
+
   @OneToOne(() => RatingEntity, (ratings) => ratings.line, { cascade: true })
   @JoinColumn()
   rating: RatingEntity;
