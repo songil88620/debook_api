@@ -9,18 +9,16 @@ import {
   Inject,
   Param,
   Post,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
-import { Tester, User } from 'src/user/user.decorator';
+import { User } from 'src/user/user.decorator';
 import { LineService } from './line.service';
-import { LineCreateDto } from './dtos';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
-import { Public } from 'src/auth/public.decorator';
 
 @Controller('lines')
 export class LineController {
@@ -31,8 +29,7 @@ export class LineController {
   ) {}
 
   @Post()
-  // @UseGuards(FirebaseAuthGuard)
-  @Public()
+  @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 201,
     description: 'Create one line',
@@ -51,14 +48,18 @@ export class LineController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file'), FileInterceptor('thumbnail'))
+  @UseInterceptors(AnyFilesInterceptor())
   async createLine(
-    @UploadedFile('file') videoFile: Express.Multer.File,
-    @UploadedFile('thumbnail') thumbnailFile: Express.Multer.File,
-    @Tester() user: any,
+    @UploadedFiles() files: Express.Multer.File[],
+    @User() user: any,
     @Body() data: any,
   ) {
     try {
+      const videoFile = files.find((file) => file.fieldname === 'file');
+      const thumbnailFile = files.find(
+        (file) => file.fieldname === 'thumbnail',
+      );
+
       if (!videoFile.mimetype.match(/video\/(mp4)/)) {
         throw new BadRequestException('Video file must be of type MP4.');
       }
@@ -76,11 +77,10 @@ export class LineController {
           thumbnailFileName,
         ),
       ]);
- 
 
       if (resVideoFile.status && resThumbnailFile.status) {
         const video_url = resVideoFile.file_url;
-        const inPath = video_url.split('/').slice(1).join('/');
+        const inPath = video_url.split('/').slice(-2).join('/');
         data.file = video_url;
         data.thumbnail = resThumbnailFile.file_url;
         return await this.lineService.createLine(user.uid, data, inPath);

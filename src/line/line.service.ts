@@ -67,6 +67,7 @@ export class LineService {
       type: data.type,
       rating: rating,
       file: data.file,
+      thumbnail: data.thumbnail,
     };
     const c = this.repository.create(new_line);
     const line = await this.repository.save(c);
@@ -79,10 +80,14 @@ export class LineService {
 
     // compress uploaded video by calling this compressor
     // no need to wait
-    axios.post(this.compressorUrl, {
-      inPath: `debook-user-data/${inPath}`,
-      outPath: inPath,
-    });
+    try {
+      axios.post(this.compressorUrl, {
+        inPath: `debook-user-data/${inPath}`,
+        outPath: inPath,
+      });
+    } catch (error) {
+      this.loggerService.error('Compressor Error', error.message);
+    }
 
     return { line };
   }
