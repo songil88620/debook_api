@@ -203,10 +203,6 @@ export class BooklistController {
     @Query('include') include?: string,
   ) {
     return this.booklistService.getList(user.uid, title, page, limit, include);
-    // if (include == 'books') {
-    //   return this.booklistService.getBooks(user.uid);
-    // } else {
-    // }
   }
 
   @Delete(':id')

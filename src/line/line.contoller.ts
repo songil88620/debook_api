@@ -1,14 +1,13 @@
 import {
+  BadRequestException,
   Body,
   Controller,
-  FileTypeValidator,
   forwardRef,
   Get,
   HttpException,
   HttpStatus,
   Inject,
   Param,
-  ParseFilePipe,
   Post,
   UploadedFile,
   UseGuards,
@@ -16,11 +15,12 @@ import {
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
-import { User } from 'src/user/user.decorator';
+import { Tester, User } from 'src/user/user.decorator';
 import { LineService } from './line.service';
 import { LineCreateDto } from './dtos';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('lines')
 export class LineController {
@@ -31,7 +31,8 @@ export class LineController {
   ) {}
 
   @Post()
-  @UseGuards(FirebaseAuthGuard)
+  // @UseGuards(FirebaseAuthGuard)
+  @Public()
   @ApiResponse({
     status: 201,
     description: 'Create one line',
@@ -50,32 +51,38 @@ export class LineController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('video'))
+  @UseInterceptors(FileInterceptor('file'), FileInterceptor('thumbnail'))
   async createLine(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          // new MaxFileSizeValidator({ maxSize: 5000 }),
-          new FileTypeValidator({ fileType: /video\/(mp4)/ }),
-        ],
-        fileIsRequired: true,
-      }),
-    )
-    file: Express.Multer.File,
-    @User() user: any,
-    @Body() data: LineCreateDto,
+    @UploadedFile('file') videoFile: Express.Multer.File,
+    @UploadedFile('thumbnail') thumbnailFile: Express.Multer.File,
+    @Tester() user: any,
+    @Body() data: any,
   ) {
     try {
-      const file_name = user.uid + '_line_' + Date.now();
-      const res = await this.uploadService.saveFileOnS3(
-        file,
-        'line',
-        file_name,
-      );
-      if (res.status) {
-        const video_url = res.file_url;
+      if (!videoFile.mimetype.match(/video\/(mp4)/)) {
+        throw new BadRequestException('Video file must be of type MP4.');
+      }
+      if (!thumbnailFile.mimetype.match(/image\/(jpeg|png)/)) {
+        throw new BadRequestException('Image file must be JPEG or PNG.');
+      }
+
+      const thumbnailFileName = user.uid + '_line_thmb_' + Date.now();
+      const videoFileName = user.uid + '_line_' + Date.now();
+      const [resVideoFile, resThumbnailFile] = await Promise.all([
+        this.uploadService.saveFileOnS3(videoFile, 'line', videoFileName),
+        this.uploadService.saveFileOnS3(
+          thumbnailFile,
+          'line-thumbnail',
+          thumbnailFileName,
+        ),
+      ]);
+ 
+
+      if (resVideoFile.status && resThumbnailFile.status) {
+        const video_url = resVideoFile.file_url;
         const inPath = video_url.split('/').slice(1).join('/');
         data.file = video_url;
+        data.thumbnail = resThumbnailFile.file_url;
         return await this.lineService.createLine(user.uid, data, inPath);
       } else {
         throw new HttpException(

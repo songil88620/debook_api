@@ -149,8 +149,6 @@ export class BooklistService {
       })
       .loadRelationCountAndMap('booklists.bookCount', 'booklists.books')
       .loadRelationCountAndMap('booklists.savedCount', 'booklists.saved')
-      .take(limit)
-      .skip((page - 1) * limit)
       .orderBy('booklists.updated', 'DESC');
 
     if (include == 'books') {
@@ -160,14 +158,19 @@ export class BooklistService {
         .loadRelationCountAndMap('books.savedCount', 'books.saved')
         .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
         .loadRelationCountAndMap('books.lineCount', 'books.lines');
+    } else {
+      booklisQuery.take(limit).skip((page - 1) * limit);
     }
     const booklistResult = await booklisQuery.getManyAndCount();
     const [booklist, total] = booklistResult;
-    const pagination = {
-      page,
-      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
-      limit,
-    };
+    const pagination =
+      include != 'books'
+        ? {
+            page,
+            hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+            limit,
+          }
+        : null;
     this.loggerService.debug('BooklistGetList', booklist);
     return {
       booklist,

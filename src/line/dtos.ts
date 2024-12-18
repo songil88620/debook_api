@@ -25,4 +25,9 @@ export class LineCreateDto {
   @IsString()
   @IsOptional()
   file: string;
+
+  @ApiProperty({ description: 'thumbnail' })
+  @IsString()
+  @IsOptional()
+  thumbnail: string;
 }

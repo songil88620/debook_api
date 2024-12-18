@@ -30,11 +30,14 @@ export class LineEntity {
   @OneToMany(() => LinecommentEntity, (comments) => comments.line)
   comments: LinecommentEntity[];
 
-  @Column({ type: 'text', nullable: true, default: null })
+  @Column({ type: 'varchar', default: '', length: 150 })
   description: string;
 
   @Column({ type: 'text', default: null, nullable: true })
   file: string;
+
+  @Column({ type: 'text', default: null, nullable: true })
+  thumbnail: string;
 
   @OneToOne(() => RatingEntity, (ratings) => ratings.line, { cascade: true })
   @JoinColumn()
