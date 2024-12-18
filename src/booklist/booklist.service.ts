@@ -157,12 +157,27 @@ export class BooklistService {
         .loadRelationCountAndMap('books.ratingCount', 'books.ratings')
         .loadRelationCountAndMap('books.savedCount', 'books.saved')
         .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
-        .loadRelationCountAndMap('books.lineCount', 'books.lines');
+        .loadRelationCountAndMap('books.lineCount', 'books.lines')
+        .leftJoinAndSelect('books.authors', 'authors');
     } else {
       booklisQuery.take(limit).skip((page - 1) * limit);
     }
     const booklistResult = await booklisQuery.getManyAndCount();
-    const [booklist, total] = booklistResult;
+    const [booklists, total] = booklistResult;
+
+    booklists.forEach((booklist: any) => {
+      booklist.books.forEach((book: any) => {
+        book.authors = [
+          {
+            id: 'xxx',
+            name: 'Elon Musk',
+            photo:
+              'https://debook-user-data.s3.eu-north-1.amazonaws.com/avatar/QDP0fbZdGjhVmtRGU3PxlXXjzt43.1732871567182.jpg',
+          },
+        ];
+      });
+    });
+
     const pagination =
       include != 'books'
         ? {
@@ -171,9 +186,9 @@ export class BooklistService {
             limit,
           }
         : null;
-    this.loggerService.debug('BooklistGetList', booklist);
+    this.loggerService.debug('BooklistGetList', booklists);
     return {
-      booklist,
+      booklist: booklists,
       pagination,
     };
   }
