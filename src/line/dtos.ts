@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { LINE_TYPE } from 'src/enum';
 import { Column } from 'typeorm';
@@ -18,7 +18,7 @@ export class LineCreateDto {
   book: string;
 
   @ApiProperty({ description: 'rating' })
-  @IsNumber()
+  @IsOptional()
   rating: number;
 
   @ApiProperty({ description: 'file' })

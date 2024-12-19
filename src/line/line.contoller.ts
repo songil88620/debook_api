@@ -13,12 +13,13 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { User } from 'src/user/user.decorator';
 import { LineService } from './line.service';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
+import { LineCreateDto } from './dtos';
 
 @Controller('lines')
 export class LineController {
@@ -29,6 +30,7 @@ export class LineController {
   ) {}
 
   @Post()
+  @ApiConsumes('multipart/form-data')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 201,
@@ -52,7 +54,7 @@ export class LineController {
   async createLine(
     @UploadedFiles() files: Express.Multer.File[],
     @User() user: any,
-    @Body() data: any,
+    @Body() data: LineCreateDto,
   ) {
     try {
       const videoFile = files.find((file) => file.fieldname === 'file');
