@@ -92,9 +92,8 @@ export class LineService {
     return { line };
   }
 
-  async getLines(user_id: string) {
-    const lines: any[] = await this.repository.find({
-      where: { liner: { firebaseId: user_id } },
+  async getLines(user_id: string, page: number = 1, limit: number = 20) {
+    const [lines, total]: any[] = await this.repository.findAndCount({
       relations: ['book', 'liner', 'rating', 'likes', 'comments'],
       select: {
         id: true,
@@ -123,6 +122,11 @@ export class LineService {
           id: true,
         },
       },
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        created: 'DESC',
+      },
     });
 
     const linesWithData = lines.map((line) => {
@@ -140,8 +144,14 @@ export class LineService {
       };
     });
 
+    const pagination = {
+      page,
+      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+      limit,
+    };
+
     this.loggerService.debug('GetLines', linesWithData);
-    return { lines: linesWithData };
+    return { lines: linesWithData, pagination };
   }
 
   async getLineOne(user_id: string, line_id: number) {
