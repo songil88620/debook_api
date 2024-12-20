@@ -32,25 +32,9 @@ export class LineController {
   @Post()
   @ApiConsumes('multipart/form-data')
   @UseGuards(FirebaseAuthGuard)
-  @ApiResponse({
-    status: 201,
-    description: 'Create one line',
-    schema: {
-      example: {},
-    },
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'No permission to access',
-    schema: {
-      example: {
-        error: {
-          code: 'FORBIDDEN',
-        },
-      },
-    },
-  })
-  @UseInterceptors(AnyFilesInterceptor())
+  @UseInterceptors(
+    AnyFilesInterceptor({ limits: { fileSize: 100 * 1024 * 1024 } }),
+  )
   async createLine(
     @UploadedFiles() files: Express.Multer.File[],
     @User() user: any,
