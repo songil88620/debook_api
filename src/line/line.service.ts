@@ -101,6 +101,8 @@ export class LineService {
         type: true,
         created: true,
         updated: true,
+        file: true,
+        thumbnail: true,
         book: {
           id: true,
           title: true,
@@ -133,11 +135,14 @@ export class LineService {
       const commentCount = line.comments.length;
       const rating = line.rating.rate;
       const likeCount = line.likes.length;
+      const user = line.liner;
       delete line.comments;
       delete line.rating;
       delete line.likes;
+      delete line.liner;
       return {
         ...line,
+        user,
         likeCount,
         rating,
         commentCount,
