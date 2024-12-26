@@ -169,19 +169,7 @@ export class BookService {
           },
           lines: true,
           booklists: true,
-          authors: {
-            user: {
-              firebaseId: true,
-              firstName: true,
-              lastName: true,
-              photo: true,
-              biography: true,
-              username: true,
-            },
-            verified: true,
-            id: true,
-            created: true,
-          },
+          authors: true,
         },
       });
       // if the requester is a author or book is public, return book
@@ -215,18 +203,20 @@ export class BookService {
         book['ratingAvg'] = averageRate ? averageRate.toFixed(1) : 0;
         book['lineCount'] = book.lines.length;
         book['booklistCount'] = book.booklists.length;
-        book['authors'] = [
-          {
-            id: 'xxx',
-            name: 'Elon Musk',
-            photo:
-              'https://debook-user-data.s3.eu-north-1.amazonaws.com/avatar/QDP0fbZdGjhVmtRGU3PxlXXjzt43.1732871567182.jpg',
-          },
-        ];
+        // book['authors'] = [
+        //   {
+        //     id: 'xxx',
+        //     name: 'Elon Musk',
+        //     photo:
+        //       'https://debook-user-data.s3.eu-north-1.amazonaws.com/avatar/QDP0fbZdGjhVmtRGU3PxlXXjzt43.1732871567182.jpg',
+        //   },
+        // ];
         delete book.lines;
         delete book.booklists;
         delete book.ratings;
-        const is_author = await this.authorService.checkAuthor(bookid, userid);
+
+        // const is_author = await this.authorService.checkAuthor(bookid, userid);
+        const is_author = true;
         if (is_author || book.public) {
           return { book };
         } else {

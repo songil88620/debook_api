@@ -1,5 +1,4 @@
 import { AchievementEntity } from 'src/achievement/achievement.entity';
-import { AuthorEntity } from 'src/author/author.entity';
 import { BookEntity } from 'src/book/book.entity';
 import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { BookrequestEntity } from 'src/bookrequest/bookrequest.entity';
@@ -98,8 +97,8 @@ export class UserEntity {
   @OneToMany(() => CollaboratorEntity, (collaborator) => collaborator.user)
   collaborations: CollaboratorEntity[];
 
-  @OneToMany(() => AuthorEntity, (author) => author.user)
-  authors: AuthorEntity[];
+  // @OneToMany(() => AuthorEntity, (author) => author.user)
+  // authors: AuthorEntity[];
 
   @OneToMany(() => FollowEntity, (follower) => follower.follower)
   follower: FollowEntity[];

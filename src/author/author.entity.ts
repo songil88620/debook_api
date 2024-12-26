@@ -1,5 +1,5 @@
 import { BookEntity } from 'src/book/book.entity';
-import { UserEntity } from 'src/user/user.entity';
+
 import {
   Entity,
   Column,
@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
   ManyToOne,
+  Index,
 } from 'typeorm';
 
 @Entity('authors')
@@ -14,14 +15,25 @@ export class AuthorEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => BookEntity, (book) => book.authors, { onDelete: 'CASCADE' })
-  book: BookEntity;
+  @Column({ default: 0 })
+  @Index({ unique: true })
+  author_id: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.authors, { onDelete: 'CASCADE' })
-  user: UserEntity;
+  @Column({ type: 'varchar', nullable: true, default: null, length: 50 })
+  @Index({ fulltext: true })
+  name: string;
+
+  @Column({ type: 'varchar', nullable: true, default: null, length: 50 })
+  photo: string;
 
   @Column({ default: false })
   verified: boolean;
+
+  @ManyToOne(() => BookEntity, (book) => book.authors, { onDelete: 'CASCADE' })
+  book: BookEntity;
+
+  // @ManyToOne(() => UserEntity, (user) => user.authors, { onDelete: 'CASCADE' })
+  // user: UserEntity;
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

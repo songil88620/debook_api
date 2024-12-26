@@ -165,18 +165,18 @@ export class BooklistService {
     const booklistResult = await booklisQuery.getManyAndCount();
     const [booklists, total] = booklistResult;
 
-    booklists.forEach((booklist: any) => {
-      booklist.books.forEach((book: any) => {
-        book.authors = [
-          {
-            id: 'xxx',
-            name: 'Elon Musk',
-            photo:
-              'https://debook-user-data.s3.eu-north-1.amazonaws.com/avatar/QDP0fbZdGjhVmtRGU3PxlXXjzt43.1732871567182.jpg',
-          },
-        ];
-      });
-    });
+    // booklists.forEach((booklist: any) => {
+    //   booklist.books.forEach((book: any) => {
+    //     book.authors = [
+    //       {
+    //         id: 'xxx',
+    //         name: 'Elon Musk',
+    //         photo:
+    //           'https://debook-user-data.s3.eu-north-1.amazonaws.com/avatar/QDP0fbZdGjhVmtRGU3PxlXXjzt43.1732871567182.jpg',
+    //       },
+    //     ];
+    //   });
+    // });
 
     const pagination =
       include != 'books'
