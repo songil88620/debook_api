@@ -9,11 +9,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BookEntity } from './book.entity';
 import { AuthorService } from 'src/author/author.service';
-import axios from 'axios';
 import { uuid } from 'uuidv4';
 import { UserEntity } from 'src/user/user.entity';
 import { LoggerService } from 'src/logger/logger.service';
 import { AuthorEntity } from 'src/author/author.entity';
+import * as fs from 'fs';
+import * as readline from 'readline';
 
 @Injectable()
 export class BookService {
@@ -32,7 +33,9 @@ export class BookService {
   private books = [];
   public count = 0;
 
-  async onModuleInit() {}
+  async onModuleInit() {
+    // this.insertBookData();
+  }
 
   async getBooks(
     saver_id: string,
@@ -43,8 +46,8 @@ export class BookService {
   ) {
     const booksResult = await this.repository
       .createQueryBuilder('books')
-      .leftJoin('books.authors', 'authors')
-      .leftJoin('authors.user', 'user')
+      .leftJoinAndSelect('books.authors', 'authors')
+      // .leftJoin('authors.user', 'user')
       .leftJoin('books.booklists', 'booklist')
       .leftJoinAndSelect('books.saved', 'saved')
       .leftJoin('books.lines', 'lines')
@@ -103,8 +106,8 @@ export class BookService {
   ) {
     const booksResult = await this.repository
       .createQueryBuilder('books')
-      .leftJoin('books.authors', 'authors')
-      .leftJoin('authors.user', 'user')
+      .leftJoinAndSelect('books.authors', 'authors')
+      // .leftJoin('authors.user', 'user')
       .leftJoin('books.booklists', 'booklist')
       .leftJoinAndSelect('books.saved', 'saved')
       .leftJoin('books.lines', 'lines')
@@ -274,68 +277,108 @@ export class BookService {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getMyList(userid: string) {}
 
-  // for test dummy data insetting
-  async fetchBook() {
-    for (const b of this.books) {
-      const res = await axios.get('https://openlibrary.org/search.json?q=' + b);
-      const book_data = res.data.docs[0];
-      let image = '';
-      if (book_data?.isbn) {
-        image =
-          'https://covers.openlibrary.org/b/isbn/' +
-          book_data.isbn[0] +
-          '-L.jpg';
+  async insertBookData() {
+    console.log('start.....');
+    const filePath = 'split_1.json';
+    const fileStream = fs.createReadStream(filePath);
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity,
+    });
+
+    const blackLangCode = [
+      'msa',
+      'ara',
+      'per',
+      'kat',
+      'vie',
+      'sin',
+      'ben',
+      'tel',
+      'jpn',
+      'tha',
+      'hye',
+      'urd',
+    ];
+
+    // Regex for detecting Arabic characters
+    const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/;
+
+    // Regex for detecting Hindi (Devanagari) characters
+    const hindiRegex = /[\u0900-\u097F]/;
+
+    for await (const line of rl) {
+      try {
+        const data = JSON.parse(line);
+
+        if (blackLangCode.includes(data.language_code)) continue;
+
+        let title = data.title;
+        if (!this.isReadable(data.title)) {
+          title = this.convertToReadable(data.title);
+        }
+
+        if (arabicRegex.test(title)) {
+          continue;
+        } else if (hindiRegex.test(title)) {
+          continue;
+        } else {
+        }
+
+        let image = data.image_url;
+        if (image.includes('nophoto')) {
+          if (data.isbn == '') continue;
+          image = `https://covers.openlibrary.org/b/isbn/${data.isbn}-L.jpg`;
+        }
+
+        if (image.includes('images.gr-assets.com') && image.includes('m/'))
+          image = image.replace(
+            /(gr-assets\.com.*?)(m\/)/,
+            (match, p1, p2) => p1 + p2.replace('m/', 'l/'),
+          );
+
+        const authors = [];
+        for await (const a of data.authors) {
+          const author_id = Number(a.author_id);
+          const author = await this.authorRepository.findOne({
+            where: { author_id },
+          });
+          if (author) authors.push(author);
+        }
+        if (authors.length == 0) continue;
+
+        const new_book = {
+          id: uuid(),
+          title,
+          summary: data.description,
+          image,
+          tags: '',
+          isbn: data.isbn,
+          asin: data.asin,
+          file: data.link,
+          public: true,
+          authors,
+        };
+        const c = this.repository.create(new_book);
+        await this.repository.save(c);
+      } catch (err) {
+        console.error(`Error`, err);
       }
-      if (image == '') {
-        continue;
-      }
-      const title = book_data.title;
-      const subject = book_data.subject;
-      let summary = '';
-      if (book_data?.first_sentence) {
-        summary = book_data?.first_sentence[0];
-      }
-      this.addOneBook(title, summary, image, JSON.stringify(subject));
     }
   }
 
-  async addRandom() {
-    for (let i = 0; i < 1000000; i++) {
-      const title = this.generateRandomString(10);
-      const summary = this.generateRandomString(30);
-      const tags = '';
-      const image = 'https://covers.openlibrary.org/b/isbn/0425031748-L.jpg';
-      await this.addOneBook(title, summary, image, tags);
-    }
+  isReadable(text: string) {
+    const unreadablePattern = /\\u[0-9a-fA-F]{4}/;
+    return !unreadablePattern.test(text);
   }
 
-  async addOneBook(
-    title: string,
-    summary: string,
-    image: string,
-    tags: string,
-  ) {
-    const new_book = {
-      id: uuid(),
-      title,
-      summary,
-      image,
-      tags,
-      public: true,
-    };
-    const c = this.repository.create(new_book);
-    await this.repository.save(c);
-    this.count++;
-    console.log('>>', this.count);
-  }
-
-  generateRandomString(length: number) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters[randomIndex];
+  convertToReadable(text) {
+    if (!this.isReadable(text)) {
+      return text.replace(/\\u[0-9a-fA-F]{4}/g, (match) => {
+        const code = parseInt(match.replace('\\u', ''), 16);
+        return String.fromCharCode(code);
+      });
     }
-    return result;
+    return text;
   }
 }

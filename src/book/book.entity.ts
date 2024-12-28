@@ -12,8 +12,8 @@ import {
   UpdateDateColumn,
   ManyToMany,
   OneToMany,
-  JoinTable,
   Index,
+  JoinTable,
 } from 'typeorm';
 
 @Entity('books')
@@ -35,6 +35,13 @@ export class BookEntity {
   @Column({ type: 'text', default: null, nullable: true })
   file: string;
 
+  @Column({ type: 'varchar', default: null, length: 36, nullable: true })
+  @Index({ fulltext: true })
+  isbn: string;
+
+  @Column({ type: 'varchar', default: null, length: 36, nullable: true })
+  asin: string;
+
   @Column({ default: true })
   public: boolean;
 
@@ -47,16 +54,22 @@ export class BookEntity {
   @Column({ type: 'text', default: null, nullable: true })
   tags: string;
 
-  @ManyToMany(() => BooklistEntity, (booklist) => booklist.books)
+  @ManyToMany(() => BooklistEntity, (booklist) => booklist.books, {
+    onDelete: 'CASCADE',
+  })
   booklists: BooklistEntity[];
 
-  @ManyToMany(() => UserEntity, (user) => user.savedBook)
+  @ManyToMany(() => UserEntity, (user) => user.savedBook, {
+    onDelete: 'CASCADE',
+  })
   saved: UserEntity[];
 
   @OneToMany(() => EditionEntity, (edition) => edition.book)
   editions: EditionEntity[];
 
-  @ManyToMany(() => AuthorEntity, (author) => author.book)
+  @ManyToMany(() => AuthorEntity, (author) => author.book, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable()
   authors: AuthorEntity[];
 

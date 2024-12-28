@@ -6,8 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
-  ManyToOne,
   Index,
+  ManyToMany,
 } from 'typeorm';
 
 @Entity('authors')
@@ -29,8 +29,8 @@ export class AuthorEntity {
   @Column({ default: false })
   verified: boolean;
 
-  @ManyToOne(() => BookEntity, (book) => book.authors, { onDelete: 'CASCADE' })
-  book: BookEntity;
+  @ManyToMany(() => BookEntity, (book) => book.authors, { onDelete: 'CASCADE' })
+  book: BookEntity[];
 
   // @ManyToOne(() => UserEntity, (user) => user.authors, { onDelete: 'CASCADE' })
   // user: UserEntity;
