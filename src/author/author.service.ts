@@ -14,9 +14,7 @@ export class AuthorService {
     @Inject(forwardRef(() => BookService)) private bookService: BookService,
   ) {}
 
-  async onModuleInit() {
-    // this.insertAuthorData();
-  }
+  async onModuleInit() {}
 
   // async inviteAuthor(book_id: string, authors: string[]) {}
 
@@ -29,6 +27,7 @@ export class AuthorService {
     return author ? true : false;
   }
 
+  // this code is to upload the authors data from the goodreads authors dataset
   async insertAuthorData() {
     const filePath = 'goodreads_book_authors.json';
     const fileStream = fs.createReadStream(filePath);

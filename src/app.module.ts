@@ -54,7 +54,7 @@ import { MagickeyModule } from './magickey/magickey.module';
       type: 'mysql',
       host: process.env.DB_HOST,
       port: 3306,
-      database: 'debook_db',
+      database: 'debook_db_pro',
       timezone: 'Z',
       entities: [
         UserEntity,

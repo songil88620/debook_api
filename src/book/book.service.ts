@@ -33,9 +33,7 @@ export class BookService {
   private books = [];
   public count = 0;
 
-  async onModuleInit() {
-    // this.insertBookData();
-  }
+  async onModuleInit() {}
 
   async getBooks(
     saver_id: string,
@@ -172,7 +170,12 @@ export class BookService {
           },
           lines: true,
           booklists: true,
-          authors: true,
+          authors: {
+            author_id: true,
+            name: true,
+            photo: true,
+            verified: true,
+          },
         },
       });
       // if the requester is a author or book is public, return book
@@ -277,9 +280,9 @@ export class BookService {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getMyList(userid: string) {}
 
-  async insertBookData() {
+  // this code is to upload book from the goodread book data.
+  async insertBookData(filePath) {
     console.log('start.....');
-    const filePath = 'split_1.json';
     const fileStream = fs.createReadStream(filePath);
     const rl = readline.createInterface({
       input: fileStream,
@@ -365,6 +368,7 @@ export class BookService {
         console.error(`Error`, err);
       }
     }
+    console.log('....end');
   }
 
   isReadable(text: string) {
