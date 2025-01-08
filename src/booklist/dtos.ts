@@ -11,6 +11,11 @@ export class BooklistCreateDto {
   @IsArray()
   @IsString({ each: true })
   bookIds?: string[];
+
+  @ApiProperty({ description: 'public' })
+  @IsBoolean()
+  @IsOptional()
+  public?: boolean;
 }
 
 export class BooklistUpdateDto {

@@ -10,7 +10,8 @@ import {
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { BookService } from './book.service';
-import { User } from 'src/user/user.decorator';
+import { Tester, User } from 'src/user/user.decorator';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('books')
 export class BookController {
@@ -18,6 +19,7 @@ export class BookController {
 
   @Get('recommended')
   @UseGuards(FirebaseAuthGuard)
+  // @Public()
   @ApiResponse({
     status: 200,
     description: 'Your recommend books',
@@ -32,6 +34,7 @@ export class BookController {
 
   @Get(':id')
   @UseGuards(FirebaseAuthGuard)
+  // @Public()
   @ApiResponse({
     status: 200,
     description: 'Your book',
@@ -102,6 +105,7 @@ export class BookController {
 
   @Get()
   @UseGuards(FirebaseAuthGuard)
+  // @Public()
   @ApiResponse({
     status: 200,
     description: 'Public books',

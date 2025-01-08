@@ -63,6 +63,7 @@ export class BooklistService {
       collaborators: [user],
       ownerId: user,
       title: data.title,
+      public: data.public,
     });
 
     const booklist = await this.repository.save(newBooklist);

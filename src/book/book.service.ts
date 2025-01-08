@@ -112,7 +112,7 @@ export class BookService {
       .loadRelationCountAndMap('books.ratingCount', 'books.ratings')
       .take(limit)
       .skip((page - 1) * limit)
-      .orderBy('books.updated', 'DESC')
+      //.orderBy('books.updated', 'DESC')
       .getManyAndCount();
 
     const [books, total] = booksResult;
