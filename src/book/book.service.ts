@@ -53,11 +53,8 @@ export class BookService {
       .where('books.title LIKE :title', {
         title: `%${title}%`,
       })
-      .orWhere('user.firstName LIKE :firstName', {
-        firstName: `%${author}%`,
-      })
-      .orWhere('user.lastName LIKE :lastName', {
-        lastName: `%${author}%`,
+      .orWhere('authors.name LIKE :name', {
+        name: `%${author}%`,
       })
       .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
       .loadRelationCountAndMap('books.lineCount', 'books.lines')
