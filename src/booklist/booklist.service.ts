@@ -215,7 +215,7 @@ export class BooklistService {
       if (booklist.public) {
         return { booklist };
       } else {
-        if (booklist.ownerId.firebaseId == id) {
+        if (booklist.ownerId.firebaseId == requester_id) {
           return { booklist };
         } else {
           // check the collaborator if the requester is in the collaborator list

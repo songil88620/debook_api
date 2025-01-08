@@ -99,13 +99,13 @@ export class BookService {
     page: number = 1,
     limit: number = 20,
   ) {
-    // const b = await this.repository.find({
-    //   relations: ['authors, booklists, saved, lines, ratings'],
-    //   take: limit,
-    //   skip: (page - 1) * limit,
-    // });
+    const b = await this.repository.find({
+      relations: ['authors, booklists, saved, lines, ratings'],
+      take: limit,
+      skip: (page - 1) * limit,
+    });
 
-    // return b;
+    return b;
 
     const booksResult = await this.repository
       .createQueryBuilder('books')
