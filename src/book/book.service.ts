@@ -6,7 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { BookEntity } from './book.entity';
 import { AuthorService } from 'src/author/author.service';
 import { uuid } from 'uuidv4';
@@ -42,29 +42,40 @@ export class BookService {
     page: number = 1,
     limit: number = 20,
   ) {
-    const booksResult = await this.repository
-      .createQueryBuilder('books')
-      .leftJoinAndSelect('books.authors', 'authors')
-      // .leftJoin('authors.user', 'user')
-      .leftJoin('books.booklists', 'booklist')
-      .leftJoinAndSelect('books.saved', 'saved')
-      .leftJoin('books.lines', 'lines')
-      .leftJoinAndSelect('books.ratings', 'ratings')
-      .where('books.title LIKE :title', {
-        title: `%${title}%`,
-      })
-      .orWhere('authors.name LIKE :name', {
-        name: `%${author}%`,
-      })
-      .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
-      .loadRelationCountAndMap('books.lineCount', 'books.lines')
-      .loadRelationCountAndMap('books.ratingCount', 'books.ratings')
-      .take(limit)
-      .skip((page - 1) * limit)
-      .orderBy('books.updated', 'DESC')
-      .getManyAndCount();
+    // const books = await this.repository
+    //   .createQueryBuilder('books')
+    //   .leftJoinAndSelect('books.authors', 'authors')
+    //   // .leftJoin('authors.user', 'user')
+    //   .leftJoin('books.booklists', 'booklist')
+    //   .leftJoinAndSelect('books.saved', 'saved')
+    //   .leftJoin('books.lines', 'lines')
+    //   .leftJoinAndSelect('books.ratings', 'ratings')
+    //   .where('books.title LIKE :title', {
+    //     title: `%${title}%`,
+    //   })
+    //   .orWhere('authors.name LIKE :name', {
+    //     name: `%${author}%`,
+    //   })
+    //   .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
+    //   .loadRelationCountAndMap('books.lineCount', 'books.lines')
+    //   .loadRelationCountAndMap('books.ratingCount', 'books.ratings')
+    //   .take(limit)
+    //   .skip((page - 1) * limit)
+    //   // .orderBy('books.updated', 'DESC')
+    //   .getRawMany();
+    // const [books, total] = booksResult;
 
-    const [books, total] = booksResult;
+    const books = await this.repository.find({
+      relations: ['authors', 'booklists', 'saved', 'lines', 'ratings'],
+      where: [
+        { title: Like(`%${title}%`) },
+        { authors: { name: Like(`%${author}%`) } },
+      ],
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    const hasNext = books.length >= limit ? true : false;
 
     const bookWithData = books.map((book) => {
       const totalRating = book.ratings.reduce(
@@ -75,12 +86,20 @@ export class BookService {
         ? totalRating / book.ratings.length
         : 0;
       const savedCount = book.saved.length;
+      const booklistCount = book.booklists.length;
+      const lineCount = book.lines.length;
+      const ratingCount = book.ratings.length;
       delete book.ratings;
       delete book.saved;
+      delete book.booklists;
+      delete book.lines;
       return {
         ...book,
         ratingAvg: averageRate,
         savedCount,
+        booklistCount,
+        lineCount,
+        ratingCount,
       };
     });
 
@@ -88,7 +107,7 @@ export class BookService {
 
     const pagination = {
       page,
-      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+      hasNext,
       limit,
     };
     return { books: bookWithData, pagination };
@@ -99,31 +118,13 @@ export class BookService {
     page: number = 1,
     limit: number = 20,
   ) {
-    const b = await this.repository.find({
-      relations: ['authors, booklists, saved, lines, ratings'],
+    const books = await this.repository.find({
+      relations: ['authors', 'booklists', 'saved', 'lines', 'ratings'],
       take: limit,
       skip: (page - 1) * limit,
     });
 
-    return b;
-
-    const booksResult = await this.repository
-      .createQueryBuilder('books')
-      .leftJoinAndSelect('books.authors', 'authors')
-      // .leftJoin('authors.user', 'user')
-      .leftJoin('books.booklists', 'booklist')
-      .leftJoinAndSelect('books.saved', 'saved')
-      .leftJoin('books.lines', 'lines')
-      .leftJoinAndSelect('books.ratings', 'ratings')
-      .loadRelationCountAndMap('books.booklistCount', 'books.booklists')
-      .loadRelationCountAndMap('books.lineCount', 'books.lines')
-      .loadRelationCountAndMap('books.ratingCount', 'books.ratings')
-      .take(limit)
-      .skip((page - 1) * limit)
-      //.orderBy('books.updated', 'DESC')
-      .getManyAndCount();
-
-    const [books, total] = booksResult;
+    const hasNext = books.length >= limit ? true : false;
 
     const bookWithData = books.map((book) => {
       const totalRating = book.ratings.reduce(
@@ -134,12 +135,20 @@ export class BookService {
         ? totalRating / book.ratings.length
         : 0;
       const savedCount = book.saved.length;
+      const booklistCount = book.booklists.length;
+      const lineCount = book.lines.length;
+      const ratingCount = book.ratings.length;
       delete book.ratings;
       delete book.saved;
+      delete book.booklists;
+      delete book.lines;
       return {
         ...book,
         ratingAvg: averageRate,
         savedCount,
+        booklistCount,
+        lineCount,
+        ratingCount,
       };
     });
 
@@ -147,7 +156,7 @@ export class BookService {
 
     const pagination = {
       page,
-      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+      hasNext,
       limit,
     };
     return { books: bookWithData, pagination };

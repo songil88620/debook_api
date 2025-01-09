@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
 import { BookEntity } from 'src/book/book.entity';
 import { BooklistEntity } from 'src/booklist/booklist.entity';
@@ -60,20 +60,44 @@ export class SearchService {
     page: number = 1,
     limit: number = 20,
   ) {
-    const [books, total] = await this.bookRepository
-      .createQueryBuilder('books')
-      .where('LOWER(books.title) LIKE LOWER(:keyword)', {
-        keyword: `%${keyword.toLowerCase()}%`,
-      })
-      .take(limit)
-      .skip((page - 1) * limit)
-      .getManyAndCount();
+    const books = await this.bookRepository.find({
+      relations: ['authors', 'booklists', 'saved', 'lines', 'ratings'],
+      where: { title: Like(`%${keyword}%`) },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+    const hasNext = books.length >= limit ? true : false;
+    const bookWithData = books.map((book) => {
+      const totalRating = book.ratings.reduce(
+        (sum, rating) => sum + rating.rate,
+        0,
+      );
+      const averageRate = book.ratings.length
+        ? totalRating / book.ratings.length
+        : 0;
+      const savedCount = book.saved.length;
+      const booklistCount = book.booklists.length;
+      const lineCount = book.lines.length;
+      const ratingCount = book.ratings.length;
+      delete book.ratings;
+      delete book.saved;
+      delete book.booklists;
+      delete book.lines;
+      return {
+        ...book,
+        ratingAvg: averageRate,
+        savedCount,
+        booklistCount,
+        lineCount,
+        ratingCount,
+      };
+    });
     const pagination = {
       page,
-      hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
+      hasNext,
       limit,
     };
-    return { books, pagination };
+    return { books: bookWithData, pagination };
   }
 
   async searchBooklist(
