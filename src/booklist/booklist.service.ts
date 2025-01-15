@@ -38,7 +38,7 @@ export class BooklistService {
   ) {}
 
   async createOne(data: BooklistCreateDto, ownerId: string) {
-    const [user, bookEntities] = await Promise.all([
+    const [user, bookEntities, count] = await Promise.all([
       this.userRepository.findOne({
         where: {
           firebaseId: ownerId,
@@ -46,6 +46,9 @@ export class BooklistService {
       }),
       this.bookrepository.findBy({
         id: In(data.bookIds),
+      }),
+      this.repository.count({
+        where: { ownerId: { firebaseId: ownerId } },
       }),
     ]);
 
@@ -64,6 +67,7 @@ export class BooklistService {
       ownerId: user,
       title: data.title,
       public: data.public,
+      top3: count == 0 ? true : false,
     });
 
     const booklist = await this.repository.save(newBooklist);

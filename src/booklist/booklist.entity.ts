@@ -49,6 +49,9 @@ export class BooklistEntity {
   @OneToMany(() => CollaboratorEntity, (collaborator) => collaborator.booklist)
   collaborators: CollaboratorEntity[];
 
+  @Column({ default: false })
+  top3: boolean;
+
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;
 
