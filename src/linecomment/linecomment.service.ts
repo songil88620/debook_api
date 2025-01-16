@@ -2,6 +2,8 @@
 import {
   BadRequestException,
   forwardRef,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
 } from '@nestjs/common';
@@ -56,8 +58,8 @@ export class LinecommentService {
   async replyComment(
     user_id: string,
     line_id: number,
-    content: string,
     parent_id: number,
+    content: string,
   ) {
     const [user, line, parent] = await Promise.all([
       this.userRepository.findOne({ where: { firebaseId: user_id } }),
@@ -98,7 +100,56 @@ export class LinecommentService {
     }
   }
 
-  async likeOrUnlikeComment(user_id: string, like_id: string, type: LIKE_TYPE) {
+  async likeOrUnlikeComment(user_id: string, like_id: any, type: LIKE_TYPE) {
     await this.likeService.likeOrUnlike(user_id, like_id, type);
+  }
+
+  async getComments(line_id: number) {
+    const comments: any = await this.repository.find({
+      where: { id: line_id },
+      relations: ['author', 'likes'],
+      select: {
+        id: true,
+        author: {
+          firebaseId: true,
+          firstName: true,
+          lastName: true,
+          photo: true,
+        },
+        content: true,
+        parentId: true,
+        likes: true,
+        created: true,
+        updated: true,
+      },
+    });
+    const commentMap = new Map();
+    comments.forEach((comment: any) => {
+      if (comment.parentId == 0) {
+        comment.children = [];
+        commentMap.set(comment.id, comment);
+      }
+      comment.likes = comment.likes.length;
+    });
+    return { comments };
+  }
+
+  async deleteComment(lind_id: number, comment_id: number, user_id: string) {
+    const comment = await this.repository.findOne({
+      where: {
+        id: comment_id,
+        author: { firebaseId: user_id },
+        line: { id: lind_id },
+      },
+    });
+    if (comment) {
+      await this.repository.delete({ id: comment_id });
+      throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
+    } else {
+      throw new HttpException(
+        { error: { code: 'FORBIDDEN' } },
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 }

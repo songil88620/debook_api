@@ -262,6 +262,8 @@ export class UserService {
           'comments',
           'book.authors',
           'liner.savedBook',
+          'comments.likes',
+          'comments.author',
         ],
         select: {
           id: true,
@@ -330,10 +332,18 @@ export class UserService {
       const likeCount = line.likes.length;
       const commentCount = line.comments.length;
       const rating = line.rating.rate;
-      delete line.rating;
       line.liner['savedBookCount'] = line.liner.savedBook.length;
-      delete line.liner.savedBook;
       line['user'] = line.liner;
+      const commentMap = new Map();
+      line.comments.forEach((comment: any) => {
+        if (comment.parentId == 0) {
+          comment.children = [];
+          commentMap.set(comment.id, comment);
+        }
+        comment.likes = comment.likes.length;
+      });
+      delete line.rating;
+      delete line.liner.savedBook;
       delete line.liner;
       return {
         ...line,

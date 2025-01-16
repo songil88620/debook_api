@@ -49,3 +49,22 @@ export class BooklistBookUpdateDto {
   @IsBoolean()
   mode: boolean;
 }
+
+export class BookidDto {
+  @ApiProperty({ description: 'bookid' })
+  @IsString()
+  bookId: string;
+}
+
+export class CollaboratorDto {
+  @ApiProperty({ description: 'collaborators' })
+  @IsArray()
+  @IsString({ each: true })
+  collaborators?: string[];
+}
+
+export class StatusDto {
+  @ApiProperty({ description: 'status' })
+  @IsBoolean()
+  status: boolean;
+}

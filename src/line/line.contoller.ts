@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   forwardRef,
   Get,
   HttpException,
@@ -20,7 +21,9 @@ import { User } from 'src/user/user.decorator';
 import { LineService } from './line.service';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
-import { LineCreateDto } from './dtos';
+import { ContentDto, LineCreateDto } from './dtos';
+import { LinecommentService } from 'src/linecomment/linecomment.service';
+import { LIKE_TYPE } from 'src/enum';
 
 @Controller('lines')
 export class LineController {
@@ -28,6 +31,8 @@ export class LineController {
     private lineService: LineService,
     @Inject(forwardRef(() => UploadService))
     private uploadService: UploadService,
+    @Inject(forwardRef(() => LinecommentService))
+    private linecommentService: LinecommentService,
   ) {}
 
   @Post()
@@ -85,7 +90,7 @@ export class LineController {
     }
   }
 
-  @Post('likeOrUnlike')
+  @Post(':lineId/like')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 201,
@@ -105,8 +110,8 @@ export class LineController {
       },
     },
   })
-  async likeOrUnlike(@User() user: any, @Body() data: any) {
-    await this.lineService.likeOrUnlike(user.uid, data.lineId);
+  async likeOrUnlike(@User() user: any, @Param('lineId') lineId: number) {
+    await this.lineService.likeOrUnlike(user.uid, lineId);
   }
 
   @Get(':id')
@@ -153,5 +158,119 @@ export class LineController {
     @Query('limit') limit?: number,
   ) {
     return await this.lineService.getLines(user.uid, page, limit);
+  }
+
+  @Post(':lineId/comments')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 201,
+    description: 'create a comment',
+    schema: {
+      example: {},
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to access',
+    schema: {
+      example: {
+        error: {
+          code: 'FORBIDDEN',
+        },
+      },
+    },
+  })
+  async createComment(
+    @User() user: any,
+    @Param('lineId') lineId: number,
+    @Body() data: ContentDto,
+  ) {
+    return await this.linecommentService.createComment(
+      user.uid,
+      lineId,
+      data.content,
+    );
+  }
+
+  @Get(':lineId/comments')
+  @UseGuards(FirebaseAuthGuard)
+  async getComments(@Param('lineId') lineId: number) {
+    return await this.linecommentService.getComments(lineId);
+  }
+
+  @Delete(':lineId/comments/:commentId')
+  @UseGuards(FirebaseAuthGuard)
+  async deleteComments(
+    @User() user: any,
+    @Param('lineId') lineId: number,
+    @Param('commentId') commentId: number,
+  ) {
+    await this.linecommentService.deleteComment(lineId, commentId, user.uid);
+  }
+
+  @Post(':lineId/comments/:commentId/reply')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 201,
+    description: 'reply a comment',
+    schema: {
+      example: {},
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to access',
+    schema: {
+      example: {
+        error: {
+          code: 'FORBIDDEN',
+        },
+      },
+    },
+  })
+  async replyComment(
+    @User() user: any,
+    @Param('lineId') lineId: number,
+    @Param('commentId') commentId: number,
+    @Body() data: ContentDto,
+  ) {
+    return await this.linecommentService.replyComment(
+      user.uid,
+      lineId,
+      commentId,
+      data.content,
+    );
+  }
+
+  @Post(':lineId/comments/:commentId/like')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 201,
+    description: 'like or unlike a comment',
+    schema: {
+      example: {},
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'No permission to access',
+    schema: {
+      example: {
+        error: {
+          code: 'FORBIDDEN',
+        },
+      },
+    },
+  })
+  async likeOrUnlikeComment(
+    @User() user: any,
+    @Param('lineId') lineId: number,
+    @Param('commentId') commentId: number,
+  ) {
+    return await this.linecommentService.likeOrUnlikeComment(
+      user.uid,
+      commentId,
+      LIKE_TYPE.COMMENT,
+    );
   }
 }

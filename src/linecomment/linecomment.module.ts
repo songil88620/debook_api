@@ -8,7 +8,6 @@ import { LinecommentService } from './linecomment.service';
 import { LikeEntity } from 'src/like/like.entity';
 import { LikeModule } from 'src/like/like.module';
 import { LineEntity } from 'src/line/line.entity';
-import { LinecommentController } from './linecomment.controller';
 import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
@@ -24,7 +23,7 @@ import { NotificationModule } from 'src/notification/notification.module';
     forwardRef(() => NotificationModule),
     forwardRef(() => LikeModule),
   ],
-  controllers: [LinecommentController],
+  controllers: [],
   providers: [LinecommentService],
   exports: [LinecommentService],
 })

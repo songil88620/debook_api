@@ -31,3 +31,9 @@ export class LineCreateDto {
   @IsOptional()
   thumbnail: string;
 }
+
+export class ContentDto {
+  @ApiProperty({ description: 'content' })
+  @IsString()
+  content: string;
+}

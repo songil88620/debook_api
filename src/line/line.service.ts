@@ -102,6 +102,8 @@ export class LineService {
         'comments',
         'book.authors',
         'liner.savedBook',
+        'comments.likes',
+        'comments.author',
       ],
       select: {
         id: true,
@@ -132,6 +134,17 @@ export class LineService {
         },
         comments: {
           id: true,
+          parentId: true,
+          created: true,
+          updated: true,
+          likes: true,
+          author: {
+            firebaseId: true,
+            firstName: true,
+            lastName: true,
+            photo: true,
+            biography: true,
+          },
         },
       },
       take: limit,
@@ -145,13 +158,20 @@ export class LineService {
       const commentCount = line.comments.length;
       const rating = line.rating.rate;
       const likeCount = line.likes.length;
-      delete line.comments;
+      line.liner['savedBookCount'] = line.liner.savedBook.length;
+      line['user'] = line.liner;
+      const commentMap = new Map();
+      line.comments.forEach((comment: any) => {
+        if (comment.parentId == 0) {
+          comment.children = [];
+          commentMap.set(comment.id, comment);
+        }
+        comment.likes = comment.likes.length;
+      });
+      delete line.liner.savedBook;
+      delete line.liner;
       delete line.rating;
       delete line.likes;
-      line.liner['savedBookCount'] = line.liner.savedBook.length;
-      delete line.liner.savedBook;
-      line['user'] = line.liner;
-      delete line.liner;
       return {
         ...line,
         likeCount,

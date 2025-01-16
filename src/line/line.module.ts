@@ -11,6 +11,7 @@ import { LikeModule } from 'src/like/like.module';
 import { LoggerModule } from 'src/logger/logger.module';
 import { RatingEntity } from 'src/rating/rating.entity';
 import { UploadModule } from 'src/upload/upload.module';
+import { LinecommentModule } from 'src/linecomment/linecomment.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UploadModule } from 'src/upload/upload.module';
     forwardRef(() => LikeModule),
     forwardRef(() => LoggerModule),
     forwardRef(() => UploadModule),
+    forwardRef(() => LinecommentModule),
   ],
   controllers: [LineController],
   providers: [LineService],

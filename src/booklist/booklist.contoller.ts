@@ -22,7 +22,13 @@ import {
 import { ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { UserDto } from 'src/user/dtos';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
-import { BooklistCreateDto, BooklistUpdateDto } from './dtos';
+import {
+  BookidDto,
+  BooklistCreateDto,
+  BooklistUpdateDto,
+  CollaboratorDto,
+  StatusDto,
+} from './dtos';
 import { BooklistService } from './booklist.service';
 import { User } from 'src/user/user.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -232,7 +238,7 @@ export class BooklistController {
   async addOrRemoveBook(
     @User() user: any,
     @Param('booklistid') booklistid: string,
-    @Body() data: any,
+    @Body() data: BookidDto,
   ) {
     return this.booklistService.addOrRemoveBook(
       user.uid,
@@ -268,7 +274,7 @@ export class BooklistController {
   async inviteCollaborators(
     @User() user: any,
     @Param('booklistid') booklistid: string,
-    @Body() data: any,
+    @Body() data: CollaboratorDto,
   ) {
     return this.booklistService.inviteCollaborators(
       user.uid,
@@ -290,7 +296,7 @@ export class BooklistController {
   async acceptCollaborator(
     @User() user: any,
     @Param('booklistid') booklistid: string,
-    @Body() data: any,
+    @Body() data: StatusDto,
   ) {
     return this.booklistService.acceptCollaborator(
       user.uid,
