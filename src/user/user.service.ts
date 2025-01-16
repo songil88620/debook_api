@@ -254,7 +254,67 @@ export class UserService {
       }),
       this.lineRepository.find({
         where: { liner: { firebaseId: id } },
-        relations: ['book', 'rating', 'likes', 'comments'],
+        relations: [
+          'book',
+          'liner',
+          'rating',
+          'likes',
+          'comments',
+          'book.authors',
+          'liner.savedBook',
+        ],
+        select: {
+          id: true,
+          description: true,
+          type: true,
+          file: true,
+          thumbnail: true,
+          created: true,
+          updated: true,
+          rating: {
+            rate: true,
+          },
+          likes: {
+            id: true,
+            userId: {
+              firebaseId: true,
+              photo: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          book: {
+            id: true,
+            title: true,
+            image: true,
+            summary: true,
+            seen: true,
+            authors: true,
+            file: true,
+          },
+          liner: {
+            firebaseId: true,
+            firstName: true,
+            lastName: true,
+            photo: true,
+            biography: true,
+            savedBook: true,
+          },
+          comments: {
+            id: true,
+            parentId: true,
+            created: true,
+            updated: true,
+            likes: true,
+            author: {
+              firebaseId: true,
+              firstName: true,
+              lastName: true,
+              photo: true,
+              biography: true,
+            },
+          },
+        },
       }),
     ]);
 
@@ -270,9 +330,11 @@ export class UserService {
       const likeCount = line.likes.length;
       const commentCount = line.comments.length;
       const rating = line.rating.rate;
-      delete line.likes;
-      delete line.comments;
       delete line.rating;
+      line.liner['savedBookCount'] = line.liner.savedBook.length;
+      delete line.liner.savedBook;
+      line['user'] = line.liner;
+      delete line.liner;
       return {
         ...line,
         likeCount,

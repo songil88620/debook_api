@@ -94,7 +94,15 @@ export class LineService {
 
   async getLines(user_id: string, page: number = 1, limit: number = 20) {
     const [lines, total]: any[] = await this.repository.findAndCount({
-      relations: ['book', 'liner', 'rating', 'likes', 'comments'],
+      relations: [
+        'book',
+        'liner',
+        'rating',
+        'likes',
+        'comments',
+        'book.authors',
+        'liner.savedBook',
+      ],
       select: {
         id: true,
         description: true,
@@ -109,6 +117,8 @@ export class LineService {
           image: true,
           summary: true,
           seen: true,
+          authors: true,
+          file: true,
         },
         liner: {
           firebaseId: true,
@@ -135,14 +145,15 @@ export class LineService {
       const commentCount = line.comments.length;
       const rating = line.rating.rate;
       const likeCount = line.likes.length;
-      const user = line.liner;
       delete line.comments;
       delete line.rating;
       delete line.likes;
+      line.liner['savedBookCount'] = line.liner.savedBook.length;
+      delete line.liner.savedBook;
+      line['user'] = line.liner;
       delete line.liner;
       return {
         ...line,
-        user,
         likeCount,
         rating,
         commentCount,
@@ -164,7 +175,9 @@ export class LineService {
       where: { id: line_id },
       relations: [
         'liner',
+        'liner.savedBook',
         'book',
+        'book.authors',
         'likes',
         'likes.userId',
         'comments',
@@ -176,6 +189,8 @@ export class LineService {
         id: true,
         description: true,
         type: true,
+        file: true,
+        thumbnail: true,
         created: true,
         updated: true,
         rating: {
@@ -196,6 +211,8 @@ export class LineService {
           image: true,
           summary: true,
           seen: true,
+          authors: true,
+          file: true,
         },
         liner: {
           firebaseId: true,
@@ -203,6 +220,7 @@ export class LineService {
           lastName: true,
           photo: true,
           biography: true,
+          savedBook: true,
         },
         comments: {
           id: true,
@@ -224,8 +242,11 @@ export class LineService {
     line_one['commentCount'] = line_one.comments.length;
     line_one['likeCount'] = line_one.likes.length;
     line_one.rating = line_one.rating.rate;
-    delete line_one.rating;
     line_one.likes = line_one.likes.splice(0, 3);
+    line_one.liner['savedBookCount'] = line_one.liner.savedBook.length;
+    delete line_one.liner.savedBook;
+    line_one['user'] = line_one.liner;
+    delete line_one.liner;
     const commentMap = new Map();
     line_one.comments.forEach((comment: any) => {
       if (comment.parentId == 0) {

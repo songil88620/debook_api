@@ -27,6 +27,7 @@ import {
 @Entity('users')
 export class UserEntity {
   @PrimaryColumn({ type: 'varchar', unique: true, length: 36 })
+  @Index({ fulltext: true })
   firebaseId: string;
 
   @Column({ type: 'text', nullable: true, default: null })
