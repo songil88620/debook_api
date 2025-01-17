@@ -99,6 +99,7 @@ export class LineService {
         'liner',
         'rating',
         'likes',
+        'likes.userId',
         'comments',
         'book.authors',
         'liner.savedBook',
@@ -180,6 +181,7 @@ export class LineService {
       delete line.liner.savedBook;
       delete line.liner;
       delete line.rating;
+      console.log('....', line);
       line['liked'] = false;
       line.likes.forEach((like: any) => {
         if (like.userId.firebaseId == user_id) {
@@ -208,16 +210,16 @@ export class LineService {
     const line_one: any = await this.repository.findOne({
       where: { id: line_id },
       relations: [
-        'liner',
-        'liner.savedBook',
         'book',
-        'book.authors',
+        'liner',
+        'rating',
         'likes',
         'likes.userId',
         'comments',
+        'book.authors',
+        'liner.savedBook',
         'comments.likes',
         'comments.author',
-        'rating',
       ],
       select: {
         id: true,
@@ -276,6 +278,7 @@ export class LineService {
     line_one['commentCount'] = line_one.comments.length;
     line_one['likeCount'] = line_one.likes.length;
     line_one.rating = line_one.rating.rate;
+    console.log('...aaa', line_one);
     line_one['liked'] = false;
     line_one.likes.forEach((like: any) => {
       if (like.userId.firebaseId == user_id) {
