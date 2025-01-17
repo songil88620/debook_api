@@ -259,6 +259,7 @@ export class UserService {
           'liner',
           'rating',
           'likes',
+          'likes.userId',
           'comments',
           'book.authors',
           'liner.savedBook',

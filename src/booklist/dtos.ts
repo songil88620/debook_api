@@ -1,10 +1,17 @@
-import { IsString, IsOptional, IsBoolean, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  Length,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BooklistCreateDto {
-  @ApiProperty({ description: 'title' })
+  @ApiProperty({ description: 'title', minLength: 5, maxLength: 100 })
   @IsString()
   @IsOptional()
+  @Length(5, 100)
   title?: string;
 
   @ApiProperty({ description: 'book_ids' })
@@ -19,14 +26,20 @@ export class BooklistCreateDto {
 }
 
 export class BooklistUpdateDto {
-  @ApiProperty({ description: 'title' })
+  @ApiProperty({ description: 'title', minLength: 5, maxLength: 100 })
   @IsString()
   @IsOptional()
+  @Length(5, 100, {
+    message: 'title must be exactly 5~100 characters long',
+  })
   title?: string;
 
-  @ApiProperty({ description: 'summary' })
+  @ApiProperty({ description: 'summary', minLength: 0, maxLength: 1500 })
   @IsString()
   @IsOptional()
+  @Length(0, 1500, {
+    message: 'summary must be exactly 0~1500 characters long',
+  })
   summary?: string;
 
   @ApiProperty({ description: 'image' })

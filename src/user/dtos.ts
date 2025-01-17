@@ -12,8 +12,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ONBOARDING_STATUS } from 'src/enum';
 
 export class UserDto {
-  @ApiProperty({ description: 'biography' })
+  @ApiProperty({ description: 'biography', minLength: 0, maxLength: 1500 })
   @IsString()
+  @Length(0, 1500, {
+    message: 'biography must be exactly 0~1500 characters long',
+  })
   biography: string;
 
   @ApiProperty({ description: 'email' })
@@ -26,8 +29,11 @@ export class UserDto {
   @IsNotEmpty()
   firebaseId: string;
 
-  @ApiProperty({ description: 'firstName' })
+  @ApiProperty({ description: 'firstName', minLength: 1, maxLength: 30 })
   @IsString()
+  @Length(1, 30, {
+    message: 'firstName must be exactly 1~30 characters long',
+  })
   firstName: string;
 
   @ApiProperty({ description: 'invitationsRemainingCount' })
@@ -40,8 +46,11 @@ export class UserDto {
   @IsNotEmpty()
   isPublic: boolean;
 
-  @ApiProperty({ description: 'lastName' })
+  @ApiProperty({ description: 'lastName', minLength: 1, maxLength: 30 })
   @IsString()
+  @Length(1, 30, {
+    message: 'lastName must be exactly 1~30 characters long',
+  })
   lastName: string;
 
   @ApiProperty({ description: 'locale' })
@@ -62,11 +71,14 @@ export class UserDto {
   @IsNotEmpty()
   role: string;
 
-  @ApiProperty({ description: 'username' })
+  @ApiProperty({ description: 'username', minLength: 0, maxLength: 50 })
   @IsString()
+  @Length(0, 50, {
+    message: 'lastName must be exactly 0~50 characters long',
+  })
   username: string;
 
-  @ApiProperty({ description: 'backgroundColor' })
+  @ApiProperty({ description: 'backgroundColor', minLength: 7, maxLength: 9 })
   @IsString()
   @IsNotEmpty()
   @Length(7, 9, {
@@ -98,9 +110,12 @@ export class UserCreateDto {
 }
 
 export class UserUpdateDto {
-  @ApiProperty({ description: 'biography' })
+  @ApiProperty({ description: 'biography', minLength: 0, maxLength: 1500 })
   @IsString()
   @IsOptional()
+  @Length(0, 1500, {
+    message: 'biography must be exactly 0~1500 characters long',
+  })
   biography?: string;
 
   @ApiProperty({ description: 'email' })
@@ -108,14 +123,20 @@ export class UserUpdateDto {
   @IsOptional()
   email: string;
 
-  @ApiProperty({ description: 'firstName' })
+  @ApiProperty({ description: 'firstName', minLength: 1, maxLength: 30 })
   @IsString()
   @IsOptional()
+  @Length(1, 30, {
+    message: 'firstName must be exactly 1~30 characters long',
+  })
   firstName?: string;
 
-  @ApiProperty({ description: 'lastName' })
+  @ApiProperty({ description: 'lastName', minLength: 1, maxLength: 30 })
   @IsString()
   @IsOptional()
+  @Length(1, 30, {
+    message: 'lastName must be exactly 1~30 characters long',
+  })
   lastName?: string;
 
   @ApiProperty({ description: 'locale' })
@@ -128,9 +149,12 @@ export class UserUpdateDto {
   @IsOptional()
   photo?: string;
 
-  @ApiProperty({ description: 'username' })
+  @ApiProperty({ description: 'username', minLength: 0, maxLength: 50 })
   @IsString()
   @IsOptional()
+  @Length(0, 50, {
+    message: 'lastName must be exactly 0~50 characters long',
+  })
   username?: string;
 
   @ApiProperty({ description: 'backgroundColor' })
