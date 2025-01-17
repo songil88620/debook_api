@@ -342,6 +342,12 @@ export class UserService {
         }
         comment.likes = comment.likes.length;
       });
+      line['liked'] = false;
+      line.likes.forEach((like: any) => {
+        if (like.userId.firebaseId == userid) {
+          line['liked'] = true;
+        }
+      });
       delete line.rating;
       delete line.liner.savedBook;
       delete line.liner;

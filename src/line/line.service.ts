@@ -113,6 +113,15 @@ export class LineService {
         updated: true,
         file: true,
         thumbnail: true,
+        likes: {
+          id: true,
+          userId: {
+            firebaseId: true,
+            photo: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
         book: {
           id: true,
           title: true,
@@ -171,7 +180,12 @@ export class LineService {
       delete line.liner.savedBook;
       delete line.liner;
       delete line.rating;
-      delete line.likes;
+      line['liked'] = false;
+      line.likes.forEach((like: any) => {
+        if (like.userId.firebaseId == user_id) {
+          line['liked'] = true;
+        }
+      });
       return {
         ...line,
         likeCount,
@@ -262,10 +276,16 @@ export class LineService {
     line_one['commentCount'] = line_one.comments.length;
     line_one['likeCount'] = line_one.likes.length;
     line_one.rating = line_one.rating.rate;
-    line_one.likes = line_one.likes.splice(0, 3);
+    line_one['liked'] = false;
+    line_one.likes.forEach((like: any) => {
+      if (like.userId.firebaseId == user_id) {
+        line_one['liked'] = true;
+      }
+    });
+    // line_one.likes = line_one.likes.splice(0, 3);
     line_one.liner['savedBookCount'] = line_one.liner.savedBook.length;
-    delete line_one.liner.savedBook;
     line_one['user'] = line_one.liner;
+    delete line_one.liner.savedBook;
     delete line_one.liner;
     const commentMap = new Map();
     line_one.comments.forEach((comment: any) => {
