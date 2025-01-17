@@ -148,6 +148,7 @@ export class LineService {
           created: true,
           updated: true,
           likes: true,
+          content: true,
           author: {
             firebaseId: true,
             firstName: true,
@@ -264,6 +265,7 @@ export class LineService {
           created: true,
           updated: true,
           likes: true,
+          content: true,
           author: {
             firebaseId: true,
             firstName: true,

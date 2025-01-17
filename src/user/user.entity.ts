@@ -36,7 +36,7 @@ export class UserEntity {
   @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
   email: string;
 
-  @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
+  @Column({ type: 'varchar', nullable: true, default: null, length: 30 })
   @Index({ fulltext: true })
   firstName: string;
 
@@ -53,7 +53,7 @@ export class UserEntity {
   @Column({ default: true })
   isPublic: boolean;
 
-  @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
+  @Column({ type: 'varchar', nullable: true, default: null, length: 30 })
   @Index({ fulltext: true })
   lastName: string;
 

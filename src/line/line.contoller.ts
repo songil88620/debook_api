@@ -17,7 +17,7 @@ import {
 } from '@nestjs/common';
 import { ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
-import { Tester, User } from 'src/user/user.decorator';
+import { User } from 'src/user/user.decorator';
 import { LineService } from './line.service';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
@@ -181,7 +181,7 @@ export class LineController {
     },
   })
   async createComment(
-    @Tester() user: any,
+    @User() user: any,
     @Param('lineId') lineId: number,
     @Body() data: ContentDto,
   ) {

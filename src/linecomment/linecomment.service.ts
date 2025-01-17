@@ -106,7 +106,7 @@ export class LinecommentService {
 
   async getComments(line_id: number) {
     const comments: any = await this.repository.find({
-      where: { id: line_id },
+      where: { line: { id: line_id } },
       relations: ['author', 'likes'],
       select: {
         id: true,
@@ -122,6 +122,7 @@ export class LinecommentService {
         created: true,
         updated: true,
       },
+      order: { created: 'DESC' },
     });
     const commentMap = new Map();
     comments.forEach((comment: any) => {

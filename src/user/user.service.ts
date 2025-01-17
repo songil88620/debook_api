@@ -309,6 +309,7 @@ export class UserService {
             created: true,
             updated: true,
             likes: true,
+            content: true,
             author: {
               firebaseId: true,
               firstName: true,
