@@ -15,6 +15,7 @@ import { LinecommentEntity } from './linecomment.entity';
 import { LineEntity } from 'src/line/line.entity';
 import { LikeService } from 'src/like/like.service';
 import { NotificationService } from 'src/notification/notification.service';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class LinecommentService {
@@ -29,6 +30,8 @@ export class LinecommentService {
     private notificationService: NotificationService,
     @Inject(forwardRef(() => LikeService))
     private likeService: LikeService,
+    @Inject(forwardRef(() => LoggerService))
+    private loggerService: LoggerService,
   ) {}
 
   async createComment(user_id: string, line_id: number, content: string) {
@@ -105,7 +108,7 @@ export class LinecommentService {
   }
 
   async getComments(line_id: number) {
-    const comments: any = await this.repository.find({
+    let comments: any = await this.repository.find({
       where: { line: { id: line_id } },
       relations: ['author', 'likes'],
       select: {
@@ -132,6 +135,19 @@ export class LinecommentService {
       }
       comment.likes = comment.likes.length;
     });
+    const nestedComments = [];
+    comments.forEach((comment) => {
+      if (comment.parentId === 0) {
+        nestedComments.push(comment);
+      } else {
+        const parent = commentMap.get(comment.parentId);
+        if (parent) {
+          parent.children.push(comment);
+        }
+      }
+    });
+    comments = nestedComments;
+    this.loggerService.debug('GetComments', comments);
     return { comments };
   }
 

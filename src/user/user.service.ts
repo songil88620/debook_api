@@ -350,6 +350,18 @@ export class UserService {
           line['liked'] = true;
         }
       });
+      const nestedComments = [];
+      line.comments.forEach((comment) => {
+        if (comment.parentId === 0) {
+          nestedComments.push(comment);
+        } else {
+          const parent = commentMap.get(comment.parentId);
+          if (parent) {
+            parent.children.push(comment);
+          }
+        }
+      });
+      line.comments = nestedComments;
       delete line.rating;
       delete line.liner.savedBook;
       delete line.liner;

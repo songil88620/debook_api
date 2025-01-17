@@ -179,10 +179,21 @@ export class LineService {
         }
         comment.likes = comment.likes.length;
       });
+      const nestedComments = [];
+      line.comments.forEach((comment) => {
+        if (comment.parentId === 0) {
+          nestedComments.push(comment);
+        } else {
+          const parent = commentMap.get(comment.parentId);
+          if (parent) {
+            parent.children.push(comment);
+          }
+        }
+      });
+      line.comments = nestedComments;
       delete line.liner.savedBook;
       delete line.liner;
       delete line.rating;
-      console.log('....', line);
       line['liked'] = false;
       line.likes.forEach((like: any) => {
         if (like.userId.firebaseId == user_id) {
@@ -280,7 +291,6 @@ export class LineService {
     line_one['commentCount'] = line_one.comments.length;
     line_one['likeCount'] = line_one.likes.length;
     line_one.rating = line_one.rating.rate;
-    console.log('...aaa', line_one);
     line_one['liked'] = false;
     line_one.likes.forEach((like: any) => {
       if (like.userId.firebaseId == user_id) {
