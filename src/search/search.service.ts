@@ -130,7 +130,7 @@ export class SearchService {
   ) {
     const [authors, total] = await this.authorRepository
       .createQueryBuilder('authors')
-      .where('LOWER(user.name) LIKE LOWER(:keyword)', {
+      .where('LOWER(authors.name) LIKE LOWER(:keyword)', {
         keyword: `%${keyword.toLowerCase()}%`,
       })
       .select([

@@ -107,6 +107,7 @@ export class FollowService {
   async getAll(userid: string) {
     const followers = await this.userRepository.find({
       where: { followee: { follower: { firebaseId: userid } } },
+      relations: ['savedBook'],
       select: [
         'firebaseId',
         'firstName',
@@ -133,6 +134,7 @@ export class FollowService {
       where: {
         firebaseId: Not(userid),
       },
+      relations: ['savedBook'],
       select: [
         'firebaseId',
         'firstName',
