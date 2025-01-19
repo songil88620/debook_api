@@ -35,6 +35,7 @@ async function bootstrap() {
       stopAtFirstError: true,
       whitelist: true,
       forbidNonWhitelisted: true,
+      // transform: true,
     }),
   );
 

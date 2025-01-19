@@ -34,7 +34,7 @@ export class LikeEntity {
   likedLine: LineEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.liker)
-  userId: UserEntity;
+  user: UserEntity;
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

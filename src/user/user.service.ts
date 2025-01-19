@@ -253,18 +253,18 @@ export class UserService {
         },
       }),
       this.lineRepository.find({
-        where: { liner: { firebaseId: id } },
+        where: { user: { firebaseId: id } },
         relations: [
           'book',
-          'liner',
+          'user',
           'rating',
           'likes',
-          'likes.userId',
+          'likes.user',
           'comments',
           'book.authors',
-          'liner.savedBook',
+          'user.savedBook',
           'comments.likes',
-          'comments.author',
+          'comments.user',
         ],
         select: {
           id: true,
@@ -279,7 +279,7 @@ export class UserService {
           },
           likes: {
             id: true,
-            userId: {
+            user: {
               firebaseId: true,
               photo: true,
               firstName: true,
@@ -295,7 +295,7 @@ export class UserService {
             authors: true,
             file: true,
           },
-          liner: {
+          user: {
             firebaseId: true,
             firstName: true,
             lastName: true,
@@ -310,7 +310,7 @@ export class UserService {
             updated: true,
             likes: true,
             content: true,
-            author: {
+            user: {
               firebaseId: true,
               firstName: true,
               lastName: true,
@@ -334,8 +334,7 @@ export class UserService {
       const likeCount = line.likes.length;
       const commentCount = line.comments.length;
       const rating = line.rating.rate;
-      line.liner['savedBookCount'] = line.liner.savedBook.length;
-      line['user'] = line.liner;
+      line.user['savedBookCount'] = line.user.savedBook.length;
       const commentMap = new Map();
       line.comments.forEach((comment: any) => {
         if (comment.parentId == 0) {
@@ -346,7 +345,7 @@ export class UserService {
       });
       line['liked'] = false;
       line.likes.forEach((like: any) => {
-        if (like.userId.firebaseId == userid) {
+        if (like.user.firebaseId == userid) {
           line['liked'] = true;
         }
       });
@@ -363,8 +362,7 @@ export class UserService {
       });
       line.comments = nestedComments;
       delete line.rating;
-      delete line.liner.savedBook;
-      delete line.liner;
+      delete line.user.savedBook;
       return {
         ...line,
         likeCount,

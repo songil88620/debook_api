@@ -128,15 +128,19 @@ export class UserEntity {
   achiever: AchievementEntity[];
 
   @JoinTable()
-  @OneToMany(() => LineEntity, (liner) => liner.liner)
+  @OneToMany(() => LineEntity, (liner) => liner.user)
   lines: LineEntity[];
 
   @JoinTable()
-  @OneToMany(() => LinecommentEntity, (linecomment) => linecomment.author)
+  @OneToMany(() => LinecommentEntity, (linecomment) => linecomment.user)
   linecommentor: LinecommentEntity[];
 
   @JoinTable()
-  @OneToMany(() => LikeEntity, (liker) => liker.userId)
+  @OneToMany(() => LikeEntity, (rater) => rater.user)
+  rater: LikeEntity[];
+
+  @JoinTable()
+  @OneToMany(() => LikeEntity, (liker) => liker.user)
   liker: LikeEntity[];
 
   @JoinTable()

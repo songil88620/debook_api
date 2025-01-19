@@ -42,7 +42,7 @@ export class LinecommentService {
     if (user && line) {
       const new_comment = {
         line,
-        author: user,
+        user,
         content,
       };
       const c = this.repository.create(new_comment);
@@ -69,13 +69,13 @@ export class LinecommentService {
       this.lineRepository.findOne({ where: { id: line_id } }),
       this.repository.findOne({
         where: { id: parent_id },
-        relations: ['author'],
+        relations: ['user'],
       }),
     ]);
     if (user && line) {
       const new_comment = {
         line,
-        author: user,
+        user,
         content,
         parentId: parent_id,
       };
@@ -88,7 +88,7 @@ export class LinecommentService {
       };
       this.notificationService.createNotification(
         user_id,
-        parent.author.firebaseId,
+        parent.user.firebaseId,
         NOTI_TYPE.COMMETN_REPLY,
         JSON.stringify(extra),
       );
@@ -107,21 +107,32 @@ export class LinecommentService {
     await this.likeService.likeOrUnlike(user_id, like_id, type);
   }
 
-  async getComments(line_id: number) {
-    let comments: any = await this.repository.find({
+  async getComments(line_id: number, user_id: string) {
+    // eslint-disable-next-line prefer-const
+    let [comments, totalCount] = await this.repository.findAndCount({
       where: { line: { id: line_id } },
-      relations: ['author', 'likes'],
+      relations: ['user', 'likes', 'likes.user'],
       select: {
         id: true,
-        author: {
+        user: {
           firebaseId: true,
           firstName: true,
           lastName: true,
           photo: true,
+          username: true,
         },
         content: true,
         parentId: true,
-        likes: true,
+        likes: {
+          id: true,
+          user: {
+            firebaseId: true,
+            firstName: true,
+            lastName: true,
+            username: true,
+            photo: true,
+          },
+        },
         created: true,
         updated: true,
       },
@@ -133,7 +144,13 @@ export class LinecommentService {
         comment.children = [];
         commentMap.set(comment.id, comment);
       }
-      comment.likes = comment.likes.length;
+      comment['liked'] = false;
+      comment.likes.forEach((lk: any) => {
+        if (lk.user.firebaseId == user_id) {
+          comment['liked'] = true;
+        }
+      });
+      comment['likeCount'] = comment.likes.length;
     });
     const nestedComments = [];
     comments.forEach((comment) => {
@@ -148,14 +165,14 @@ export class LinecommentService {
     });
     comments = nestedComments;
     this.loggerService.debug('GetComments', comments);
-    return { comments };
+    return { comments, totalCount };
   }
 
   async deleteComment(lind_id: number, comment_id: number, user_id: string) {
     const comment = await this.repository.findOne({
       where: {
         id: comment_id,
-        author: { firebaseId: user_id },
+        user: { firebaseId: user_id },
         line: { id: lind_id },
       },
     });

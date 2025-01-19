@@ -19,7 +19,7 @@ export class LinecommentEntity {
   @ManyToOne(() => UserEntity, (user) => user.linecommentor, {
     onDelete: 'CASCADE',
   })
-  author: UserEntity;
+  user: UserEntity;
 
   @ManyToOne(() => LineEntity, (line) => line.comments, {
     onDelete: 'CASCADE',

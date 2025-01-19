@@ -35,8 +35,8 @@ export class RatingEntity {
   @OneToOne(() => LineEntity, (line) => line.rating)
   line: LineEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.liker)
-  userId: UserEntity;
+  @ManyToOne(() => UserEntity, (user) => user.rater)
+  user: UserEntity;
 
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;

@@ -194,8 +194,8 @@ export class LineController {
 
   @Get(':lineId/comments')
   @UseGuards(FirebaseAuthGuard)
-  async getComments(@Param('lineId') lineId: number) {
-    return await this.linecommentService.getComments(lineId);
+  async getComments(@User() user: any, @Param('lineId') lineId: number) {
+    return await this.linecommentService.getComments(lineId, user.uid);
   }
 
   @Delete(':lineId/comments/:commentId')

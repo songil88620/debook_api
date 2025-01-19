@@ -22,7 +22,7 @@ export class LineEntity {
   id: number;
 
   @ManyToOne(() => UserEntity, (user) => user.lines, { onDelete: 'CASCADE' })
-  liner: UserEntity;
+  user: UserEntity;
 
   @ManyToOne(() => BookEntity, (book) => book.lines, { onDelete: 'CASCADE' })
   book: BookEntity;

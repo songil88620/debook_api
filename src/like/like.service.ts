@@ -38,7 +38,7 @@ export class LikeService {
     if (type == LIKE_TYPE.COMMENT) {
       likePromise = this.repository.findOne({
         where: {
-          userId: { firebaseId: user_id },
+          user: { firebaseId: user_id },
           likedComment: { id: like_id },
           type,
         },
@@ -46,7 +46,7 @@ export class LikeService {
     } else if (type == LIKE_TYPE.LINE) {
       likePromise = this.repository.findOne({
         where: {
-          userId: { firebaseId: user_id },
+          user: { firebaseId: user_id },
           likedLine: { id: like_id },
           type,
         },
@@ -54,7 +54,7 @@ export class LikeService {
     } else {
       likePromise = this.repository.findOne({
         where: {
-          userId: { firebaseId: user_id },
+          user: { firebaseId: user_id },
           likedComment: { id: like_id },
           type,
         },
@@ -70,12 +70,12 @@ export class LikeService {
         if (type == LIKE_TYPE.COMMENT) {
           const comment = await this.linecommentRepository.findOne({
             where: { id: like_id },
-            relations: ['line', 'line.book', 'author'],
+            relations: ['line', 'line.book', 'user'],
           });
           new_like = {
             type,
             likedComment: comment,
-            userId: user,
+            user,
           };
           const extra = {
             commentId: comment.id,
@@ -84,7 +84,7 @@ export class LikeService {
           };
           this.notificationService.createNotification(
             user.firebaseId,
-            comment.author.firebaseId,
+            comment.user.firebaseId,
             NOTI_TYPE.COMMENT_LIKE,
             JSON.stringify(extra),
           );
@@ -95,7 +95,7 @@ export class LikeService {
           new_like = {
             type,
             likedLine: line,
-            userId: user,
+            user,
           };
         } else {
         }

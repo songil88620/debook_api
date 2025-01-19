@@ -2,6 +2,7 @@ import { IsString, IsOptional, Length, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { LINE_TYPE } from 'src/enum';
 import { Column } from 'typeorm';
+import { Type } from 'class-transformer';
 
 export class LineCreateDto {
   @ApiProperty({ description: 'description', minLength: 0, maxLength: 1000 })
@@ -22,6 +23,7 @@ export class LineCreateDto {
 
   @ApiProperty({ description: 'rating', minimum: 1, maximum: 5 })
   @IsOptional()
+  @Type(() => Number)
   @Min(1)
   @Max(5)
   rating: number;
