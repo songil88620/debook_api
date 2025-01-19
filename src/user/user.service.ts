@@ -62,11 +62,7 @@ export class UserService {
         this.uploadService.deleteFileOnS3(old_photo);
       }
       await this.userRepository.update({ firebaseId: id }, user);
-      const u = await this.userRepository.findOne({
-        where: { firebaseId: id },
-        relations: ['invitation'],
-      });
-      return { user: u };
+      return await this.getMe(id);
     } catch (e) {
       throw new HttpException(
         { error: { code: 'FORBIDDEN' } },

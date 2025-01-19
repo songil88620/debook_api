@@ -10,8 +10,8 @@ export class SearchController {
   constructor(private searchService: SearchService) {}
 
   @Get()
-  @UseGuards(FirebaseAuthGuard)
-  //@Public()
+  // @UseGuards(FirebaseAuthGuard)
+  @Public()
   @ApiResponse({
     status: 200,
     description: '',

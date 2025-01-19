@@ -130,21 +130,14 @@ export class SearchService {
   ) {
     const [authors, total] = await this.authorRepository
       .createQueryBuilder('authors')
-      .innerJoinAndSelect('authors.user', 'user')
-      .where(
-        "LOWER(CONCAT(COALESCE(user.firstName, ''), ' ', COALESCE(user.lastName, ''))) LIKE LOWER(:keyword)",
-        {
-          keyword: `%${keyword.toLowerCase()}%`,
-        },
-      )
+      .where('LOWER(user.name) LIKE LOWER(:keyword)', {
+        keyword: `%${keyword.toLowerCase()}%`,
+      })
       .select([
+        'authors.author_id',
         'authors.id',
-        'user.firebaseId',
-        'user.firstName',
-        'user.lastName',
-        'user.phoneNumber',
-        'user.photo',
-        'user.biography',
+        'authors.name',
+        'authors.verified',
       ])
       .take(limit)
       .skip((page - 1) * limit)

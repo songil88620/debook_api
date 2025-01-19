@@ -114,9 +114,13 @@ export class FollowService {
         'phoneNumber',
         'photo',
         'biography',
+        'savedBook',
       ],
     });
-
+    followers.forEach((r) => {
+      r['savedBookCount'] = r.savedBook.length;
+      delete r.savedBook;
+    });
     this.loggerService.debug('FollowerGetAll', followers);
     return {
       followers,
@@ -136,7 +140,12 @@ export class FollowService {
         'phoneNumber',
         'photo',
         'biography',
+        'savedBook',
       ],
+    });
+    recommendedFollowers.forEach((r) => {
+      r['savedBookCount'] = r.savedBook.length;
+      delete r.savedBook;
     });
     this.loggerService.debug(
       'FollowerGetRecommendedFollowers',

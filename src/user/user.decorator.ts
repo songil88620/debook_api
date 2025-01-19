@@ -10,7 +10,7 @@ export const User = createParamDecorator(
 export const Tester = createParamDecorator(() => {
   // return { uid: 'o9WdAztNRVfL2sNtGImD9bARv592' };
   return {
-    uid: 'anGFcjX0VAdXdKaxl4BTVNxNnzf1',
+    uid: 'pCDFPXmYlSQRs0yVRymvclQ56Io1',
     phone_number: '+8615604034323',
   };
   // return {
