@@ -136,7 +136,6 @@ export class FollowService {
         'phoneNumber',
         'photo',
         'biography',
-        'savedBooksCount',
       ],
     });
     this.loggerService.debug(

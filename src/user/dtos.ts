@@ -90,11 +90,6 @@ export class UserDto {
   @IsBoolean()
   @IsNotEmpty()
   emailVerified: boolean;
-
-  @ApiProperty({ description: 'savedBooksCount' })
-  @IsNumber()
-  @IsNotEmpty()
-  savedBooksCount: number;
 }
 
 export class UserCreateDto {

@@ -85,9 +85,6 @@ export class UserEntity {
   })
   onboardingStatus: ONBOARDING_STATUS;
 
-  @Column({ default: 0 })
-  savedBooksCount: number;
-
   @ManyToMany(() => BooklistEntity, (booklist) => booklist.saved)
   savedBooklists: BooklistEntity[];
 
