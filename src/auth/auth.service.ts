@@ -30,9 +30,7 @@ export class AuthService {
           firebaseId: uid,
           phoneNumber: phone_number,
         };
-        return {
-          user: await this.usersService.findUser(u),
-        };
+        return await this.usersService.findUser(u);
       } else {
         throw new HttpException(
           { error: { code: 'UNAUTHORIZED' } },
