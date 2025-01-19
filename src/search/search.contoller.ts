@@ -1,8 +1,9 @@
 import { Controller, UseGuards, Get, Query } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
-import { User } from 'src/user/user.decorator';
+import { Tester, User } from 'src/user/user.decorator';
 import { SearchService } from './search.service';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('search')
 export class SearchController {
@@ -10,6 +11,7 @@ export class SearchController {
 
   @Get()
   @UseGuards(FirebaseAuthGuard)
+  //@Public()
   @ApiResponse({
     status: 200,
     description: '',
@@ -18,7 +20,7 @@ export class SearchController {
     },
   })
   async getAllPublic(
-    @User() user: any,
+    @Tester() user: any,
     @Query('filter') filter?: string,
     @Query('search') keyword?: string,
     @Query('page') page?: number,

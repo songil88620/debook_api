@@ -38,13 +38,15 @@ export class UserService {
 
   // called when user register or user login to the app
   async findUser(f_user: UserCreateDto) {
-    const user = await this.getMe(f_user.firebaseId);
+    const user = await this.userRepository.findOne({
+      where: { firebaseId: f_user.firebaseId },
+    });
     if (!user) {
       const c = this.userRepository.create(f_user);
       const u = await this.userRepository.save(c);
       return await this.getMe(u.firebaseId);
     } else {
-      return user;
+      return await this.getMe(user.firebaseId);
     }
   }
 
