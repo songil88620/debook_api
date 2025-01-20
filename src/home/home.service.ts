@@ -99,8 +99,8 @@ export class HomeService {
   }
 
   async getPopularBooklists() {
-    const popularBooklist = await this.booklistRepository.find({
-      relations: ['user'],
+    const booklist = await this.booklistRepository.find({
+      relations: ['user', 'books', 'saved', 'collaborators'],
       order: {
         liked: 'DESC',
       },
@@ -118,7 +118,24 @@ export class HomeService {
         },
         public: true,
         liked: true,
+        books: true,
+        saved: true,
+        collaborators: true,
       },
+    });
+    const popularBooklist = booklist.map((b) => {
+      const bookCount = b.books.length;
+      const savedCount = b.saved.length;
+      const collaboratorCount = b.collaborators.length;
+      // delete b.books;
+      delete b.saved;
+      delete b.collaborators;
+      return {
+        ...b,
+        bookCount,
+        savedCount,
+        collaboratorCount,
+      };
     });
     return popularBooklist;
   }

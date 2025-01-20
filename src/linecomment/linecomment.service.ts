@@ -140,10 +140,10 @@ export class LinecommentService {
     });
     const commentMap = new Map();
     comments.forEach((comment: any) => {
-      if (comment.parentId == 0) {
-        comment.children = [];
-        commentMap.set(comment.id, comment);
-      }
+      //if (comment.parentId == 0) {
+      comment.children = [];
+      commentMap.set(comment.id, comment);
+      //}
       comment['liked'] = false;
       comment.likes.forEach((lk: any) => {
         if (lk.user.firebaseId == user_id) {
@@ -152,17 +152,28 @@ export class LinecommentService {
       });
       comment['likeCount'] = comment.likes.length;
     });
+
     const nestedComments = [];
-    comments.reverse().forEach((comment) => {
+    comments.forEach((comment) => {
       if (comment.parentId === 0) {
         nestedComments.push(comment);
       } else {
         const parent = commentMap.get(comment.parentId);
         if (parent) {
-          parent.children.push(comment);
+          if (parent.parentId === 0) {
+            parent.children.push(comment);
+          } else {
+            const topLevelParent = nestedComments.find(
+              (nestedComment) => nestedComment.id === parent.parentId,
+            );
+            if (topLevelParent) {
+              topLevelParent.children.push(comment);
+            }
+          }
         }
       }
     });
+
     comments = nestedComments;
     this.loggerService.debug('GetComments', comments);
     return { comments, totalCount };
