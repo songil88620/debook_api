@@ -2,6 +2,7 @@ export enum NOTI_TYPE {
   DEBOOK = 'debook',
   COMMENT_LIKE = 'comment_like',
   COMMETN_REPLY = 'comment_reply',
+  COMMETN_MENTIONED = 'comment_mentioned',
   NEW_FOLLOWER = 'new_follower',
   INVITATION = 'invitation',
   COLLABORATOR = 'collaborator',

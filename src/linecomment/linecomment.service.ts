@@ -47,6 +47,12 @@ export class LinecommentService {
       };
       const c = this.repository.create(new_comment);
       const comment = await this.repository.save(c);
+      const extra = {
+        commentId: comment.id,
+        content: content,
+        lindId: line_id,
+      };
+      this.notifyToMentionedUser(content, user_id, extra);
       return { comment };
     } else {
       throw new BadRequestException({
@@ -92,6 +98,7 @@ export class LinecommentService {
         NOTI_TYPE.COMMETN_REPLY,
         JSON.stringify(extra),
       );
+      this.notifyToMentionedUser(content, user_id, extra);
       return { comment };
     } else {
       throw new BadRequestException({
@@ -140,10 +147,10 @@ export class LinecommentService {
     });
     const commentMap = new Map();
     comments.forEach((comment: any) => {
-      //if (comment.parentId == 0) {
-      comment.children = [];
+      if (comment.parentId == 0) {
+        comment.children = [];
+      }
       commentMap.set(comment.id, comment);
-      //}
       comment['liked'] = false;
       comment.likes.forEach((lk: any) => {
         if (lk.user.firebaseId == user_id) {
@@ -158,18 +165,16 @@ export class LinecommentService {
       if (comment.parentId === 0) {
         nestedComments.push(comment);
       } else {
-        const parent = commentMap.get(comment.parentId);
-        if (parent) {
-          if (parent.parentId === 0) {
-            parent.children.push(comment);
-          } else {
-            const topLevelParent = nestedComments.find(
-              (nestedComment) => nestedComment.id === parent.parentId,
-            );
-            if (topLevelParent) {
-              topLevelParent.children.push(comment);
-            }
-          }
+        let currentParent = commentMap.get(comment.parentId);
+        const topParent = currentParent;
+        while (currentParent && currentParent.parentId !== 0) {
+          currentParent = commentMap.get(currentParent.parentId);
+        }
+        if (topParent != currentParent) {
+          comment['replyTo'] = currentParent.user;
+        }
+        if (currentParent) {
+          currentParent.children.push(comment);
         }
       }
     });
@@ -195,6 +200,30 @@ export class LinecommentService {
         { error: { code: 'FORBIDDEN' } },
         HttpStatus.FORBIDDEN,
       );
+    }
+  }
+
+  async notifyToMentionedUser(
+    message: string,
+    notifier: string,
+    extra: object,
+  ) {
+    const usernameRegex = /@(\w+)/g;
+    const names = [];
+    let match;
+    while ((match = usernameRegex.exec(message)) !== null) {
+      names.push(match[1]);
+    }
+    for (const username of names) {
+      const user = await this.userRepository.findOne({ where: { username } });
+      if (user) {
+        this.notificationService.createNotification(
+          notifier,
+          user.firebaseId,
+          NOTI_TYPE.COMMETN_MENTIONED,
+          JSON.stringify(extra),
+        );
+      }
     }
   }
 }
