@@ -153,7 +153,7 @@ export class LinecommentService {
       comment['likeCount'] = comment.likes.length;
     });
     const nestedComments = [];
-    comments.forEach((comment) => {
+    comments.reverse().forEach((comment) => {
       if (comment.parentId === 0) {
         nestedComments.push(comment);
       } else {

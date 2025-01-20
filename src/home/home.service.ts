@@ -245,7 +245,10 @@ export class HomeService {
 
   async getFivePickForYou(userid: string) {
     // TODO: need to run some algorithm to get 5 picks(books) for user
-    const booksForYou = await this.bookRepository.find({ take: 5 });
+    const booksForYou = await this.bookRepository.find({
+      relations: ['authors', 'booklists', 'saved', 'lines', 'ratings'],
+      take: 5,
+    });
     return booksForYou;
   }
 
@@ -259,6 +262,7 @@ export class HomeService {
 
   async getRecentAddedBooks() {
     const recentAddedBooks = await this.bookRepository.find({
+      relations: ['authors', 'booklists', 'saved', 'lines', 'ratings'],
       order: {
         created: 'DESC',
       },

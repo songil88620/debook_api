@@ -24,6 +24,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { ContentDto, LineCreateDto } from './dtos';
 import { LinecommentService } from 'src/linecomment/linecomment.service';
 import { LIKE_TYPE } from 'src/enum';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('lines')
 export class LineController {
@@ -194,6 +195,7 @@ export class LineController {
 
   @Get(':lineId/comments')
   @UseGuards(FirebaseAuthGuard)
+  @Public()
   async getComments(@User() user: any, @Param('lineId') lineId: number) {
     return await this.linecommentService.getComments(lineId, user.uid);
   }
