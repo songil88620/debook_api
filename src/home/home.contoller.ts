@@ -134,4 +134,18 @@ export class HomeController {
     const recentAddedBooks = await this.homeService.getRecentAddedBooks();
     return { recentAddedBooks };
   }
+
+  @Get('recommendedFriends')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: '',
+    schema: {
+      example: {},
+    },
+  })
+  async getRecommendedFriends() {
+    const recommendedFriends = await this.homeService.getRecommendedFriends();
+    return { recommendedFriends };
+  }
 }

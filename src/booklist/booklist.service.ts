@@ -48,7 +48,7 @@ export class BooklistService {
         id: In(data.bookIds),
       }),
       this.repository.count({
-        where: { ownerId: { firebaseId: ownerId } },
+        where: { user: { firebaseId: ownerId } },
       }),
     ]);
 
@@ -64,7 +64,7 @@ export class BooklistService {
     const newBooklist = this.repository.create({
       books: bookEntities,
       collaborators: [user],
-      ownerId: user,
+      user,
       title: data.title,
       public: data.public,
       top3: count == 0 ? true : false,
@@ -102,19 +102,16 @@ export class BooklistService {
 
   async updateOne(id: string, ownerId: string, data: BooklistUpdateDto) {
     const booklist = await this.repository.findOne({
-      where: { id, ownerId: { firebaseId: ownerId } },
+      where: { id, user: { firebaseId: ownerId } },
     });
     if (booklist.image != null && booklist.image != data.image) {
       // remove old image on S3
       this.uploadService.deleteFileOnS3(booklist.image);
     }
     if (booklist) {
-      await this.repository.update(
-        { id, ownerId: { firebaseId: ownerId } },
-        data,
-      );
+      await this.repository.update({ id, user: { firebaseId: ownerId } }, data);
       const booklist = await this.repository.findOne({
-        where: { id, ownerId: { firebaseId: ownerId } },
+        where: { id, user: { firebaseId: ownerId } },
       });
       return { booklist };
     } else {
@@ -137,19 +134,19 @@ export class BooklistService {
       .createQueryBuilder('booklists')
       // .leftJoinAndSelect('booklists.books', 'books')
       .leftJoin('booklists.saved', 'saved')
-      .leftJoin('booklists.ownerId', 'owner')
+      .leftJoin('booklists.user', 'user')
       .addSelect([
-        'owner.firebaseId',
-        'owner.firstName',
-        'owner.lastName',
-        'owner.photo',
-        'owner.biography',
-        'owner.username',
+        'user.firebaseId',
+        'user.firstName',
+        'user.lastName',
+        'user.photo',
+        'user.biography',
+        'user.username',
       ])
       .where('LOWER(booklists.title) LIKE LOWER(:title)', {
         title: `%${_title}%`,
       })
-      .andWhere('(booklists.ownerId = :uid OR saved.firebaseId = :uid)', {
+      .andWhere('(booklists.user = :uid OR saved.firebaseId = :uid)', {
         uid,
       })
       .loadRelationCountAndMap('booklists.bookCount', 'booklists.books')
@@ -201,12 +198,12 @@ export class BooklistService {
   async getOne(id: string, requester_id: string) {
     const booklist = await this.repository.findOne({
       where: { id },
-      relations: ['books', 'saved', 'ownerId'],
+      relations: ['books', 'saved', 'user'],
       select: [
         'id',
         'image',
         'liked',
-        'ownerId',
+        'user',
         'public',
         'title',
         'summary',
@@ -219,7 +216,7 @@ export class BooklistService {
       if (booklist.public) {
         return { booklist };
       } else {
-        if (booklist.ownerId.firebaseId == requester_id) {
+        if (booklist.user.firebaseId == requester_id) {
           return { booklist };
         } else {
           // check the collaborator if the requester is in the collaborator list
@@ -256,7 +253,7 @@ export class BooklistService {
       .leftJoinAndSelect('books.saved', 'saved')
       .leftJoinAndSelect('books.ratings', 'ratings')
       .leftJoinAndSelect('books.booklists', 'relatedBooklists')
-      .where('booklists.ownerId = :user_id', { user_id })
+      .where('booklists.user = :user_id', { user_id })
       .groupBy('books.id')
       .getMany();
 
@@ -292,7 +289,7 @@ export class BooklistService {
 
   async deleteOne(id: string, ownerId: string) {
     const bl = await this.repository.findOne({
-      where: { id, ownerId: { firebaseId: ownerId } },
+      where: { id, user: { firebaseId: ownerId } },
     });
     if (bl) {
       await this.repository.delete({ id });
@@ -311,7 +308,7 @@ export class BooklistService {
     collaborators: string[],
   ) {
     const booklist = await this.repository.findOne({
-      where: { id: booklist_id, ownerId: { firebaseId: ownerId } },
+      where: { id: booklist_id, user: { firebaseId: ownerId } },
     });
     if (booklist) {
       await this.collaboratorService.inviteCollaborators(
@@ -352,7 +349,7 @@ export class BooklistService {
   async addOrRemoveBook(userid: string, booklist_id: string, bookid: string) {
     const [booklist, book] = await Promise.all([
       this.repository.findOne({
-        where: { id: booklist_id, ownerId: { firebaseId: userid } },
+        where: { id: booklist_id, user: { firebaseId: userid } },
         relations: ['books'],
         select: ['id', 'books'],
       }),

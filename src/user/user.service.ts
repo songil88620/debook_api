@@ -189,10 +189,19 @@ export class UserService {
       this.booklistRepository
         .createQueryBuilder('booklists')
         .leftJoinAndSelect('booklists.books', 'books')
+        .leftJoin('booklists.user', 'buser')
+        .addSelect([
+          'buser.firebaseId',
+          'buser.firstName',
+          'buser.lastName',
+          'buser.photo',
+          'buser.biography',
+          'buser.username',
+        ])
         .leftJoinAndSelect('booklists.saved', 'saved')
         .leftJoinAndSelect('booklists.collaborators', 'collaborators')
         .leftJoinAndSelect('collaborators.user', 'user')
-        .where('booklists.ownerId = :userId', { userId: id })
+        .where('booklists.user = :userId', { userId: id })
         .orWhere('user.firebaseId = :userId', { userId: id })
         .orWhere('saved.firebaseId = :userId', { userId: id })
         .getMany(),
@@ -210,7 +219,7 @@ export class UserService {
       const bookCount = b.books.length;
       const savedCount = b.saved.length;
       const collaboratorCount = b.collaborators.length;
-      delete b.books;
+      // delete b.books;
       delete b.saved;
       delete b.collaborators;
       return {

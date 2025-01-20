@@ -32,6 +32,9 @@ export class LinecommentEntity {
   @Column({ default: 0 })
   parentId: number;
 
+  // @Column({ type: 'text' })
+  // notifeer: string;
+
   @OneToMany(() => LikeEntity, (like) => like.likedComment)
   likes: LikeEntity[];
 

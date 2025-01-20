@@ -55,7 +55,7 @@ export class CollaboratorService {
       const c = this.repository.create(new_collaborator);
       await this.repository.save(c);
       this.notificationService.createNotification(
-        booklist.ownerId.firebaseId,
+        booklist.user.firebaseId,
         cl,
         NOTI_TYPE.COLLABORATOR,
         '',
@@ -100,7 +100,7 @@ export class CollaboratorService {
       //       );
       this.notificationService.createNotification(
         collaborator_id,
-        booklist.ownerId.firebaseId,
+        booklist.user.firebaseId,
         NOTI_TYPE.COLLABORATOR,
         '',
       );

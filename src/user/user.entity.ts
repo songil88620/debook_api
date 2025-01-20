@@ -141,7 +141,7 @@ export class UserEntity {
   liker: LikeEntity[];
 
   @JoinTable()
-  @OneToMany(() => BooklistEntity, (booklist) => booklist.ownerId)
+  @OneToMany(() => BooklistEntity, (booklist) => booklist.user)
   booklistOwner: BooklistEntity[];
 
   @CreateDateColumn({ type: 'timestamp' })

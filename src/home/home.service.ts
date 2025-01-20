@@ -21,7 +21,7 @@ export class HomeService {
   ) {}
 
   async getBooksForYou(userid: string) {
-    // TODO need to run some algorithm based on user data
+    // TODO: need to run some algorithm based on user data
 
     const books = await this.bookRepository.find({
       relations: ['booklists', 'saved', 'lines', 'ratings', 'authors'],
@@ -76,7 +76,7 @@ export class HomeService {
   async getSavedBooklists(userid: string) {
     const user = await this.userRepository.findOne({
       where: { firebaseId: userid },
-      relations: ['savedBooklists', 'savedBooklists.ownerId'],
+      relations: ['savedBooklists', 'savedBooklists.user'],
       select: {
         firebaseId: true,
         savedBooklists: {
@@ -84,7 +84,7 @@ export class HomeService {
           title: true,
           summary: true,
           image: true,
-          ownerId: {
+          user: {
             firebaseId: true,
             firstName: true,
             lastName: true,
@@ -100,7 +100,7 @@ export class HomeService {
 
   async getPopularBooklists() {
     const popularBooklist = await this.booklistRepository.find({
-      relations: ['ownerId'],
+      relations: ['user'],
       order: {
         liked: 'DESC',
       },
@@ -110,7 +110,7 @@ export class HomeService {
         title: true,
         summary: true,
         image: true,
-        ownerId: {
+        user: {
           firebaseId: true,
           firstName: true,
           lastName: true,
@@ -244,7 +244,7 @@ export class HomeService {
   }
 
   async getFivePickForYou(userid: string) {
-    // TODO need to run some algorithm to get 5 picks(books) for user
+    // TODO: need to run some algorithm to get 5 picks(books) for user
     const booksForYou = await this.bookRepository.find({ take: 5 });
     return booksForYou;
   }
@@ -265,5 +265,47 @@ export class HomeService {
       take: 50,
     });
     return recentAddedBooks;
+  }
+
+  async getRecommendedFriends() {
+    // TODO: add some algorithm for recommended friend search later
+    const recommendedFriends = await this.userRepository.find({
+      relations: [
+        'invitation',
+        'savedBook',
+        'savedBooklists',
+        'followee.follower',
+        'lines',
+        'lines.book',
+      ],
+      select: {
+        firebaseId: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        isPublic: true,
+        photo: true,
+        invitationsRemainingCount: true,
+        backgroundColor: true,
+        savedBook: true,
+        savedBooklists: true,
+        followee: true,
+        lines: true,
+        created: true,
+      },
+      order: {
+        created: 'DESC',
+      },
+      take: 50,
+    });
+    recommendedFriends.forEach((user: any) => {
+      user['savedBookCount'] = user.savedBook.length;
+      user['savedBooklistCount'] = user.savedBooklists.length;
+      user['followerCount'] = user.followee.length;
+      user['lineCount'] = user.lines.length;
+      delete user.savedBook;
+      delete user.followee;
+    });
+    return recommendedFriends;
   }
 }

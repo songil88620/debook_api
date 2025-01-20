@@ -30,7 +30,7 @@ export class BooklistEntity {
   image: string;
 
   @ManyToOne(() => UserEntity, (user) => user.booklistOwner)
-  ownerId: UserEntity;
+  user: UserEntity;
 
   @Column({ default: true })
   public: boolean;
