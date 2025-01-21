@@ -7,9 +7,12 @@ import {
   IsBoolean,
   Length,
   IsEnum,
+  Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ONBOARDING_STATUS } from 'src/enum';
+import { Transform } from 'class-transformer';
+import { IsGeneralString } from 'src/validators/validator.string';
 
 export class UserDto {
   @ApiProperty({ description: 'biography', minLength: 0, maxLength: 1500 })
@@ -106,7 +109,7 @@ export class UserCreateDto {
 
 export class UserUpdateDto {
   @ApiProperty({ description: 'biography', minLength: 0, maxLength: 1500 })
-  @IsString()
+  @IsGeneralString()
   @IsOptional()
   @Length(0, 1500, {
     message: 'biography must be exactly 0~1500 characters long',
@@ -124,6 +127,11 @@ export class UserUpdateDto {
   @Length(1, 30, {
     message: 'firstName must be exactly 1~30 characters long',
   })
+  @Matches(/^[a-zA-Z0-9]*$/, {
+    message:
+      'username must contain only alphanumeric characters (letters and numbers)',
+  })
+  @Transform(({ value }) => value?.replace(/\s+/g, ''), { toClassOnly: true })
   firstName?: string;
 
   @ApiProperty({ description: 'lastName', minLength: 1, maxLength: 30 })
@@ -132,6 +140,11 @@ export class UserUpdateDto {
   @Length(1, 30, {
     message: 'lastName must be exactly 1~30 characters long',
   })
+  @Matches(/^[a-zA-Z0-9]*$/, {
+    message:
+      'username must contain only alphanumeric characters (letters and numbers)',
+  })
+  @Transform(({ value }) => value?.replace(/\s+/g, ''), { toClassOnly: true })
   lastName?: string;
 
   @ApiProperty({ description: 'locale' })
@@ -150,6 +163,11 @@ export class UserUpdateDto {
   @Length(0, 50, {
     message: 'lastName must be exactly 0~50 characters long',
   })
+  @Matches(/^[a-zA-Z0-9]*$/, {
+    message:
+      'username must contain only alphanumeric characters (letters and numbers)',
+  })
+  @Transform(({ value }) => value?.replace(/\s+/g, ''), { toClassOnly: true })
   username?: string;
 
   @ApiProperty({ description: 'backgroundColor' })
@@ -158,6 +176,9 @@ export class UserUpdateDto {
   @Length(7, 9, {
     message:
       'backgroundColor must be hex value and exactly 7~9 characters long',
+  })
+  @Matches(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, {
+    message: 'backgroundColor must be a valid hex color',
   })
   backgroundColor?: string;
 

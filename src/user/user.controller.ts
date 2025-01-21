@@ -100,7 +100,6 @@ export class UserController {
       },
     },
   })
-  @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
     status: 200,
     description: 'The user has been updated successfully',
@@ -128,6 +127,7 @@ export class UserController {
       },
     },
   })
+  @UseGuards(FirebaseAuthGuard)
   @UseInterceptors(FileInterceptor('photo'))
   async updateUser(
     @Optional()

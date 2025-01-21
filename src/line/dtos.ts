@@ -3,10 +3,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { LINE_TYPE } from 'src/enum';
 import { Column } from 'typeorm';
 import { Type } from 'class-transformer';
+import { IsGeneralString } from 'src/validators/validator.string';
 
 export class LineCreateDto {
   @ApiProperty({ description: 'description', minLength: 0, maxLength: 1000 })
-  @IsString()
+  @IsGeneralString()
   @IsOptional()
   @Length(0, 1000, {
     message: 'content must be exactly 0~1000 characters long',
@@ -41,7 +42,7 @@ export class LineCreateDto {
 
 export class ContentDto {
   @ApiProperty({ description: 'content', minLength: 1, maxLength: 300 })
-  @IsString()
+  @IsGeneralString()
   @Length(1, 300, {
     message: 'content must be exactly 1~300 characters long',
   })
