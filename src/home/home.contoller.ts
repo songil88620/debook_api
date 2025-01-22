@@ -107,6 +107,20 @@ export class HomeController {
     return { mostViewedLineCreators };
   }
 
+  @Get('topTenCreators')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: '',
+    schema: {
+      example: {},
+    },
+  })
+  async getTopTenCreators() {
+    const topTenCreators = await this.homeService.getTopTenCreators();
+    return { topTenCreators };
+  }
+
   @Get('bookCategories')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
@@ -144,8 +158,10 @@ export class HomeController {
       example: {},
     },
   })
-  async getRecommendedFriends() {
-    const recommendedFriends = await this.homeService.getRecommendedFriends();
+  async getRecommendedFriends(@User() user: any) {
+    const recommendedFriends = await this.homeService.getRecommendedFriends(
+      user.uid,
+    );
     return { recommendedFriends };
   }
 }

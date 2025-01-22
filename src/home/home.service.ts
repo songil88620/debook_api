@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
 import { BookEntity } from 'src/book/book.entity';
 import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { AuthorEntity } from 'src/author/author.entity';
+import { LineEntity } from 'src/line/line.entity';
 
 @Injectable()
 export class HomeService {
@@ -18,6 +19,8 @@ export class HomeService {
     private booklistRepository: Repository<BooklistEntity>,
     @InjectRepository(AuthorEntity)
     private authorRepository: Repository<AuthorEntity>,
+    @InjectRepository(LineEntity)
+    private lineRepository: Repository<LineEntity>,
   ) {}
 
   async getBooksForYou(userid: string) {
@@ -270,7 +273,117 @@ export class HomeService {
   }
 
   async getMostViewedLineCreators() {
-    return [];
+    const mostViewedLine = await this.lineRepository
+      .createQueryBuilder('lines')
+      .leftJoinAndSelect('lines.user', 'user')
+      .groupBy('lines.user.firebaseId')
+      .orderBy('lines.viewCount', 'DESC')
+      .limit(10)
+      .getMany();
+    const firebaseIds = mostViewedLine.map((result) => result.user.firebaseId);
+    const users = await this.userRepository.find({
+      where: { firebaseId: In(firebaseIds) },
+      relations: [
+        'savedBook',
+        'booklistOwner',
+        'lines',
+        'savedBooklists',
+        'lines.book',
+      ],
+      select: {
+        firebaseId: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        isPublic: true,
+        photo: true,
+        invitationsRemainingCount: true,
+        backgroundColor: true,
+        savedBook: true,
+        savedBooklists: true,
+        lines: {
+          id: true,
+          description: true,
+          file: true,
+          thumbnail: true,
+          type: true,
+          viewCount: true,
+        },
+      },
+    });
+    const sortedUsers = firebaseIds.map((id) =>
+      users.find((user) => user.firebaseId === id),
+    );
+    // Map `linesCount` from raw results to the user entities
+    const result = sortedUsers.map((user) => {
+      user['savedBookCount'] = user.savedBook.length;
+      user['savedBooklistCount'] = user.savedBooklists.length;
+      user['lineCount'] = user.lines.length;
+      const booklistCount = Number(user?.booklistOwner.length || 0);
+      delete user.savedBook;
+      delete user.booklistOwner;
+      delete user.savedBooklists;
+      return {
+        ...user,
+        booklistCount,
+      };
+    });
+    return result;
+  }
+
+  async getTopTenCreators() {
+    const rawResults = await this.userRepository
+      .createQueryBuilder('users')
+      .leftJoin('users.lines', 'lines')
+      .select('users.firebaseId', 'firebaseId')
+      .addSelect('COUNT(lines.id)', 'linesCount')
+      .groupBy('users.firebaseId')
+      .orderBy('linesCount', 'DESC')
+      .limit(10)
+      .getRawMany();
+
+    const firebaseIds = rawResults.map((result) => result.firebaseId);
+    const users = await this.userRepository.find({
+      where: { firebaseId: In(firebaseIds) },
+      relations: [
+        'savedBook',
+        'booklistOwner',
+        'lines',
+        'savedBooklists',
+        'lines.book',
+      ],
+      select: {
+        firebaseId: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        isPublic: true,
+        photo: true,
+        invitationsRemainingCount: true,
+        backgroundColor: true,
+        savedBook: true,
+        savedBooklists: true,
+        lines: true,
+      },
+    });
+    // Map `linesCount` from raw results to the user entities
+    const result = users.map((user) => {
+      const matchingRaw = rawResults.find(
+        (raw) => raw.firebaseId === user.firebaseId,
+      );
+      user['savedBookCount'] = user.savedBook.length;
+      user['savedBooklistCount'] = user.savedBooklists.length;
+      user['lineCount'] = user.lines.length;
+      const booklistCount = Number(user?.booklistOwner.length || 0);
+      delete user.savedBook;
+      delete user.booklistOwner;
+      delete user.savedBooklists;
+      return {
+        ...user,
+        booklistCount,
+      };
+    });
+    return result;
   }
 
   async getBookCategories() {
@@ -288,7 +401,7 @@ export class HomeService {
     return recentAddedBooks;
   }
 
-  async getRecommendedFriends() {
+  async getRecommendedFriends(user_id: string) {
     // TODO: add some algorithm for recommended friend search later
     const recommendedFriends = await this.userRepository.find({
       relations: [
@@ -299,6 +412,7 @@ export class HomeService {
         'lines',
         'lines.book',
       ],
+      where: { firebaseId: Not(user_id) },
       select: {
         firebaseId: true,
         firstName: true,

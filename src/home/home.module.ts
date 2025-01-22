@@ -7,6 +7,7 @@ import { BooklistEntity } from 'src/booklist/booklist.entity';
 import { AuthorEntity } from 'src/author/author.entity';
 import { HomeController } from './home.contoller';
 import { HomeService } from './home.service';
+import { LineEntity } from 'src/line/line.entity';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { HomeService } from './home.service';
       BookEntity,
       BooklistEntity,
       AuthorEntity,
+      LineEntity,
     ]),
     forwardRef(() => AuthModule),
   ],

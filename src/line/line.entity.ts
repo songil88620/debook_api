@@ -49,6 +49,9 @@ export class LineEntity {
   @OneToMany(() => LikeEntity, (like) => like.likedLine)
   likes: LikeEntity[];
 
+  @Column({ default: 0 })
+  viewCount: number;
+
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;
 
