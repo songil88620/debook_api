@@ -82,6 +82,7 @@ export class FollowService {
           followeeId,
           NOTI_TYPE.NEW_FOLLOWER,
           '',
+          '',
         );
         throw new HttpException(
           {

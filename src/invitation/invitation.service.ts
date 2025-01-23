@@ -368,6 +368,7 @@ export class InvitationService {
           inviteeId,
           NOTI_TYPE.INVITATION,
           '',
+          '',
         );
 
         throw new HttpException(

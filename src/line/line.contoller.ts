@@ -17,14 +17,13 @@ import {
 } from '@nestjs/common';
 import { ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
-import { Tester, User } from 'src/user/user.decorator';
+import { User } from 'src/user/user.decorator';
 import { LineService } from './line.service';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
 import { ContentDto, LineCreateDto } from './dtos';
 import { LinecommentService } from 'src/linecomment/linecomment.service';
 import { LIKE_TYPE } from 'src/enum';
-import { Public } from 'src/auth/public.decorator';
 
 @Controller('lines')
 export class LineController {
@@ -161,6 +160,12 @@ export class LineController {
     return await this.lineService.getLines(user.uid, page, limit);
   }
 
+  @Delete(':lineId')
+  @UseGuards(FirebaseAuthGuard)
+  async deleteLine(@User() user: any, @Param('lineId') lineId: number) {
+    await this.lineService.deleteLineOne(user.uid, lineId);
+  }
+
   @Post(':lineId/comments')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({
@@ -195,14 +200,12 @@ export class LineController {
 
   @Get(':lineId/comments')
   @UseGuards(FirebaseAuthGuard)
-  // @Public()
   async getComments(@User() user: any, @Param('lineId') lineId: number) {
     return await this.linecommentService.getComments(lineId, user.uid);
   }
 
   @Delete(':lineId/comments/:commentId')
   @UseGuards(FirebaseAuthGuard)
-  // @Public()
   async deleteComments(
     @User() user: any,
     @Param('lineId') lineId: number,
@@ -213,7 +216,6 @@ export class LineController {
 
   @Post(':lineId/comments/:commentId/reply')
   @UseGuards(FirebaseAuthGuard)
-  // @Public()
   @ApiResponse({
     status: 201,
     description: 'reply a comment',

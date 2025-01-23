@@ -12,6 +12,7 @@ import { LoggerModule } from 'src/logger/logger.module';
 import { RatingEntity } from 'src/rating/rating.entity';
 import { UploadModule } from 'src/upload/upload.module';
 import { LinecommentModule } from 'src/linecomment/linecomment.module';
+import { NotificationEntity } from 'src/notification/notification.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { LinecommentModule } from 'src/linecomment/linecomment.module';
       UserEntity,
       BookEntity,
       RatingEntity,
+      NotificationEntity,
     ]),
     forwardRef(() => AuthModule),
     forwardRef(() => AchievementModule),

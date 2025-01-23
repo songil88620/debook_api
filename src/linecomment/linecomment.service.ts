@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Param,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -53,7 +54,7 @@ export class LinecommentService {
         content: content,
         lindId: line_id,
       };
-      this.notifyToMentionedUser(content, user_id, extra);
+      this.notifyToMentionedUser(content, user_id, extra, comment.id);
       return { comment };
     } else {
       throw new BadRequestException({
@@ -79,7 +80,7 @@ export class LinecommentService {
         relations: ['user'],
       }),
     ]);
-    if (user && line) {
+    if (user && line && parent) {
       const new_comment = {
         line,
         user,
@@ -98,8 +99,9 @@ export class LinecommentService {
         parent.user.firebaseId,
         NOTI_TYPE.COMMETN_REPLY,
         JSON.stringify(extra),
+        `c_${comment.id}`,
       );
-      this.notifyToMentionedUser(content, user_id, extra);
+      this.notifyToMentionedUser(content, user_id, extra, comment.id);
       return { comment };
     } else {
       throw new BadRequestException({
@@ -199,29 +201,66 @@ export class LinecommentService {
     });
 
     if (comment) {
-      const replies = await this.repository.find({
-        where: {
-          parentId: comment_id,
-          user: { firebaseId: user_id },
+      if (comment.parentId == 0) {
+        const replies = await this.repository.find({
+          where: {
+            parentId: comment_id,
+            line: { id: line_id },
+          },
+          select: {
+            id: true,
+          },
+        });
+        const replyIds = replies.map((reply) => reply.id);
+        // get children replies
+        const secReplies = await this.repository.find({
+          where: { parentId: In(replyIds), line: { id: line_id } },
+          select: {
+            id: true,
+          },
+        });
+        await Promise.all([
+          // delete children replies
+          this.repository.delete({
+            parentId: In(replyIds),
+            line: { id: line_id },
+          }),
+          // delete replies
+          this.repository.delete({
+            id: In(replyIds),
+            line: { id: line_id },
+          }),
+        ]);
+        const secReplyIds = secReplies.map((reply) => reply.id);
+        const removeNotificationList = [
+          ...replyIds.map((r) => 'c_' + r),
+          ...secReplyIds.map((r) => 'c_' + r),
+        ];
+        this.notificationService.deleteReplyNotification(
+          removeNotificationList,
+        );
+      } else {
+        // get children replies
+        const secReplies = await this.repository.find({
+          where: { parentId: comment_id, line: { id: line_id } },
+          select: { id: true },
+        });
+        const secReplyIds = secReplies.map((reply) => reply.id);
+        // delete children replies
+        await this.repository.delete({
+          id: In(secReplyIds),
           line: { id: line_id },
-        },
-        select: {
-          id: true,
-        },
-      });
-      // delete children replies
-      await this.repository.delete({
-        parentId: In(replies),
-        line: { id: line_id },
-      });
-      // delete replies
-      await this.repository.delete({
-        id: In(replies),
-        line: { id: line_id },
-      });
+        });
+        const removeNotificationList = [
+          ...secReplyIds.map((r) => 'c_' + r),
+          ...[`c_${comment_id}`],
+        ];
+        this.notificationService.deleteReplyNotification(
+          removeNotificationList,
+        );
+      }
       // delete comment
       await this.repository.delete({ id: comment_id });
-
       throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
     } else {
       throw new HttpException(
@@ -235,6 +274,7 @@ export class LinecommentService {
     message: string,
     notifier: string,
     extra: object,
+    comment_id: number,
   ) {
     const usernameRegex = /@(\w+)/g;
     const names = [];
@@ -250,6 +290,7 @@ export class LinecommentService {
           user.firebaseId,
           NOTI_TYPE.COMMETN_MENTIONED,
           JSON.stringify(extra),
+          `c_${comment_id}`,
         );
       }
     }

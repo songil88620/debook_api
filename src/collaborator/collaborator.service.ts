@@ -59,6 +59,7 @@ export class CollaboratorService {
         cl,
         NOTI_TYPE.COLLABORATOR,
         '',
+        '',
       );
     }
   }
@@ -102,6 +103,7 @@ export class CollaboratorService {
         collaborator_id,
         booklist.user.firebaseId,
         NOTI_TYPE.COLLABORATOR,
+        '',
         '',
       );
     } else {

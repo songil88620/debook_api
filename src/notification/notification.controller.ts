@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Param, Patch } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from 'src/auth/auth.guard';
 import { NotificationService } from './notification.service';
@@ -18,9 +18,9 @@ export class NotificationController {
     return await this.notificationService.getMyNotification(user.uid);
   }
 
-  @Patch(':id')
+  @Post('readAll')
   @UseGuards(FirebaseAuthGuard)
-  async updateBookList(@User() user: any, @Param('id') id: number) {
-    await this.notificationService.updateNotificationStatus(id, user.id);
+  async readAllNotification(@User() user: any) {
+    return await this.notificationService.readAllNotification(user.uid);
   }
 }

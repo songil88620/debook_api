@@ -1,11 +1,13 @@
 import {
   BadRequestException,
   forwardRef,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
 import { LineEntity } from './line.entity';
 import { LineCreateDto } from './dtos';
@@ -16,6 +18,7 @@ import { LikeService } from 'src/like/like.service';
 import { LoggerService } from 'src/logger/logger.service';
 import { RatingEntity } from 'src/rating/rating.entity';
 import axios from 'axios';
+import { NotificationEntity } from 'src/notification/notification.entity';
 
 @Injectable()
 export class LineService {
@@ -29,6 +32,8 @@ export class LineService {
     private userRepository: Repository<UserEntity>,
     @InjectRepository(BookEntity)
     private bookRepository: Repository<BookEntity>,
+    @InjectRepository(NotificationEntity)
+    private notificationRepository: Repository<NotificationEntity>,
     @Inject(forwardRef(() => AchievementService))
     private achievementService: AchievementService,
     @Inject(forwardRef(() => LikeService))
@@ -87,7 +92,6 @@ export class LineService {
     } catch (error) {
       this.loggerService.error('Compressor Error', error.message);
     }
-
     return { line };
   }
 
@@ -355,6 +359,25 @@ export class LineService {
     line_one.comments = nestedComments;
     this.loggerService.debug('GetLineOne', line_one);
     return { line: line_one };
+  }
+
+  async deleteLineOne(user_id: string, line_id: number) {
+    const line = await this.repository.findOne({
+      where: { id: line_id, user: { firebaseId: user_id } },
+    });
+    if (line) {
+      await this.repository.delete({ id: line_id });
+      const query = `"lineId":"${line_id}"`;
+      this.notificationRepository.delete({
+        extra: Like(`%${query}%`),
+      });
+      throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
+    } else {
+      throw new HttpException(
+        { error: { code: 'FORBIDDEN' } },
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 
   async likeOrUnlike(user_id: string, line_id: number) {

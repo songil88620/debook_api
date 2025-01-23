@@ -26,6 +26,9 @@ export class NotificationEntity {
   @Column({ type: 'text', default: null, nullable: true })
   extra: string;
 
+  @Column({ type: 'text', default: null, nullable: true })
+  sourceId: string;
+
   @Column({
     type: 'enum',
     enum: NOTI_STATUS_TYPE,

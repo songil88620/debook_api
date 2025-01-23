@@ -87,6 +87,7 @@ export class LikeService {
             comment.user.firebaseId,
             NOTI_TYPE.COMMENT_LIKE,
             JSON.stringify(extra),
+            `c_${comment.id}`,
           );
         } else if (type == LIKE_TYPE.LINE) {
           const line = await this.lineRepository.findOne({

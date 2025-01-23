@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { NotificationEntity } from './notification.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { NOTI_STATUS_TYPE, NOTI_TYPE } from 'src/enum';
@@ -19,6 +19,7 @@ export class NotificationService {
     notifiee: string,
     type: NOTI_TYPE,
     extra: string,
+    sourceId: string,
   ) {
     const notifier_u = await this.userRepository.findOne({
       where: { firebaseId: notifier },
@@ -32,31 +33,22 @@ export class NotificationService {
       type,
       extra: extra,
       status: NOTI_STATUS_TYPE.PENDING,
+      sourceId,
     };
     const c = this.repository.create(new_notification);
     await this.repository.save(c);
   }
 
-  async updateNotificationStatus(id: number, notifiee: string) {
-    try {
-      const nt = await this.repository.find({
-        where: { id, notifiee: { firebaseId: notifiee } },
-      });
-      if (nt) {
-        await this.repository.update({ id }, { status: NOTI_STATUS_TYPE.READ });
-        throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
-      } else {
-        throw new HttpException(
-          { error: { code: 'FORBIDDEN' } },
-          HttpStatus.FORBIDDEN,
-        );
-      }
-    } catch (e) {
-      throw new HttpException(
-        { error: { code: 'FORBIDDEN' } },
-        HttpStatus.FORBIDDEN,
-      );
-    }
+  async readAllNotification(notifiee: string) {
+    await this.repository.update(
+      { notifiee: { firebaseId: notifiee } },
+      { status: NOTI_STATUS_TYPE.READ },
+    );
+    throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
+  }
+
+  async deleteReplyNotification(del_list: string[]) {
+    await this.repository.delete({ sourceId: In(del_list) });
   }
 
   async getMyNotification(notifiee: string) {
