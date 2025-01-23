@@ -8,7 +8,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
 import { LIKE_TYPE, NOTI_TYPE } from 'src/enum';
 import { LinecommentEntity } from './linecomment.entity';
@@ -16,6 +16,7 @@ import { LineEntity } from 'src/line/line.entity';
 import { LikeService } from 'src/like/like.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { LoggerService } from 'src/logger/logger.service';
+import { reverse } from 'dns';
 
 @Injectable()
 export class LinecommentService {
@@ -171,7 +172,7 @@ export class LinecommentService {
           currentParent = commentMap.get(currentParent.parentId);
         }
         if (topParent != currentParent) {
-          comment['replyTo'] = currentParent.user;
+          comment['replyTo'] = currentParent?.user;
         }
         if (currentParent) {
           currentParent.children.push(comment);
@@ -179,21 +180,48 @@ export class LinecommentService {
       }
     });
 
+    nestedComments.forEach((comment) => {
+      comment['children'] = comment['children']?.reverse();
+    });
+
     comments = nestedComments;
     this.loggerService.debug('GetComments', comments);
     return { comments, totalCount };
   }
 
-  async deleteComment(lind_id: number, comment_id: number, user_id: string) {
+  async deleteComment(line_id: number, comment_id: number, user_id: string) {
     const comment = await this.repository.findOne({
       where: {
         id: comment_id,
         user: { firebaseId: user_id },
-        line: { id: lind_id },
+        line: { id: line_id },
       },
     });
+
     if (comment) {
+      const replies = await this.repository.find({
+        where: {
+          parentId: comment_id,
+          user: { firebaseId: user_id },
+          line: { id: line_id },
+        },
+        select: {
+          id: true,
+        },
+      });
+      // delete children replies
+      await this.repository.delete({
+        parentId: In(replies),
+        line: { id: line_id },
+      });
+      // delete replies
+      await this.repository.delete({
+        id: In(replies),
+        line: { id: line_id },
+      });
+      // delete comment
       await this.repository.delete({ id: comment_id });
+
       throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
     } else {
       throw new HttpException(
