@@ -49,10 +49,18 @@ export class FollowService {
       },
     });
     if (followed) {
-      await this.repository.delete({
-        follower: { firebaseId: followerId },
-        followee: { firebaseId: followeeId },
-      });
+      await Promise.all([
+        this.repository.delete({
+          follower: { firebaseId: followerId },
+          followee: { firebaseId: followeeId },
+        }),
+        this.notificationService.deleteNotificatonSimple({
+          notifier: followerId,
+          notifiee: followeeId,
+          type: NOTI_TYPE.NEW_FOLLOWER,
+        }),
+      ]);
+
       throw new HttpException(
         {
           success: {

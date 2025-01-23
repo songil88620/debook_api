@@ -371,6 +371,9 @@ export class LineService {
       this.notificationRepository.delete({
         extra: Like(`%${query}%`),
       });
+
+      // const file = line.file;
+      // TODO: need to add the removing s3 bucket file code
       throw new HttpException({ message: 'success' }, HttpStatus.NO_CONTENT);
     } else {
       throw new HttpException(

@@ -51,6 +51,10 @@ export class NotificationService {
     await this.repository.delete({ sourceId: In(del_list) });
   }
 
+  async deleteNotificatonSimple(condition: object) {
+    await this.repository.delete(condition);
+  }
+
   async getMyNotification(notifiee: string) {
     const notifys = await this.repository.find({
       where: {
