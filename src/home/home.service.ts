@@ -124,6 +124,7 @@ export class HomeService {
         books: true,
         saved: true,
         collaborators: true,
+        top3: true,
       },
     });
     const popularBooklist = booklist.map((b) => {
@@ -186,10 +187,10 @@ export class HomeService {
       const authorCount = book.authors.length;
       const lineCount = book.lines.length;
       const booklistCount = book.booklists.length;
-      delete book.saved;
+      // delete book.saved;
       delete book.authors;
       delete book.lines;
-      delete book.booklists;
+      // delete book.booklists;
       delete book.ratings;
       return {
         ...book,
@@ -320,9 +321,9 @@ export class HomeService {
       user['savedBooklistCount'] = user.savedBooklists.length;
       user['lineCount'] = user.lines.length;
       const booklistCount = Number(user?.booklistOwner.length || 0);
-      delete user.savedBook;
+      // delete user.savedBook;
       delete user.booklistOwner;
-      delete user.savedBooklists;
+      // delete user.savedBooklists;
       return {
         ...user,
         booklistCount,
@@ -375,9 +376,9 @@ export class HomeService {
       user['savedBooklistCount'] = user.savedBooklists.length;
       user['lineCount'] = user.lines.length;
       const booklistCount = Number(user?.booklistOwner.length || 0);
-      delete user.savedBook;
+      // delete user.savedBook;
       delete user.booklistOwner;
-      delete user.savedBooklists;
+      // delete user.savedBooklists;
       return {
         ...user,
         booklistCount,
