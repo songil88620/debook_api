@@ -59,13 +59,13 @@ export class SearchController {
       );
       return { booklists };
     } else {
-      const [people, books, authors, booklists] = await Promise.all([
+      const [people, books, booklists] = await Promise.all([
         this.searchService.searchPeople(user.uid, keyword, page, limit),
         this.searchService.searchBook(user.uid, keyword, page, limit),
-        this.searchService.searchAuthor(user.uid, keyword, page, limit),
+        //this.searchService.searchAuthor(user.uid, keyword, page, limit),
         this.searchService.searchBooklist(user.uid, keyword, page, limit),
       ]);
-      return { people, books, authors, booklists };
+      return { people, books, booklists };
     }
   }
 }
