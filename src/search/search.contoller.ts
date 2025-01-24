@@ -40,15 +40,17 @@ export class SearchController {
         limit,
       );
       return { books };
-    } else if (filter == 'authors') {
-      const authors = await this.searchService.searchAuthor(
-        user.uid,
-        keyword,
-        page,
-        limit,
-      );
-      return { authors };
-    } else if (filter == 'booklist') {
+    }
+    // else if (filter == 'authors') {
+    //   const authors = await this.searchService.searchAuthor(
+    //     user.uid,
+    //     keyword,
+    //     page,
+    //     limit,
+    //   );
+    //   return { authors };
+    // }
+    else if (filter == 'booklist') {
       const booklists = await this.searchService.searchBooklist(
         user.uid,
         keyword,

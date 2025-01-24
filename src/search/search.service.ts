@@ -26,32 +26,80 @@ export class SearchService {
     page: number = 1,
     limit: number = 20,
   ) {
-    const [people, total] = await this.userRepository
-      .createQueryBuilder('users')
-      .where(
-        "LOWER(CONCAT(COALESCE(users.firstName, ''), ' ', COALESCE(users.lastName, ''))) LIKE LOWER(:keyword) OR LOWER(users.username) LIKE LOWER(:keyword)",
-        {
-          keyword: `%${keyword.toLowerCase()}%`,
-        },
-      )
-      .select([
-        'users.username',
-        'users.firebaseId',
-        'users.firstName',
-        'users.lastName',
-        'users.phoneNumber',
-        'users.photo',
-        'users.biography',
-      ])
-      .take(limit)
-      .skip((page - 1) * limit)
-      .getManyAndCount();
+    // const [people, total] = await this.userRepository
+    //   .createQueryBuilder('users')
+    //   .where(
+    //     "LOWER(CONCAT(COALESCE(users.firstName, ''), ' ', COALESCE(users.lastName, ''))) LIKE LOWER(:keyword) OR LOWER(users.username) LIKE LOWER(:keyword)",
+    //     {
+    //       keyword: `%${keyword.toLowerCase()}%`,
+    //     },
+    //   )
+    //   .select([
+    //     'users.username',
+    //     'users.firebaseId',
+    //     'users.firstName',
+    //     'users.lastName',
+    //     'users.phoneNumber',
+    //     'users.photo',
+    //     'users.biography',
+    //   ])
+    //   .take(limit)
+    //   .skip((page - 1) * limit)
+    //   .getManyAndCount();
+    // const books = await this.repository.find({
+    //   relations: ['authors', 'booklists', 'saved', 'lines', 'ratings'],
+    //   where: [
+    //     { title: Like(`%${title}%`) },
+    //     { authors: { name: Like(`%${author}%`) } },
+    //   ],
+    //   take: limit,
+    //   skip: (page - 1) * limit,
+    // });
+
+    const [people, total] = await this.userRepository.findAndCount({
+      relations: [
+        'invitation',
+        'savedBook',
+        'savedBooklists',
+        'followee.follower',
+        'lines',
+        'lines.book',
+      ],
+      where: [
+        { firstName: Like(`%${keyword}%`) },
+        { lastName: Like(`%${keyword}%`) },
+        { username: Like(`%${keyword}`) },
+      ],
+      select: {
+        firebaseId: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        isPublic: true,
+        photo: true,
+        invitationsRemainingCount: true,
+        backgroundColor: true,
+        savedBook: true,
+        savedBooklists: true,
+        followee: true,
+        lines: true,
+      },
+    });
+    const peopleWithData = people.map((user) => {
+      user['savedBookCount'] = user.savedBook.length;
+      user['savedBooklistCount'] = user.savedBooklists.length;
+      user['followerCount'] = user.followee.length;
+      user['lineCount'] = user.lines.length;
+      delete user.savedBook;
+      delete user.followee;
+      return { user };
+    });
     const pagination = {
       page,
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
-    return { people, pagination };
+    return { people: peopleWithData, pagination };
   }
 
   async searchBook(
@@ -108,18 +156,44 @@ export class SearchService {
   ) {
     const [booklists, total] = await this.booklistRepository
       .createQueryBuilder('booklists')
+      .leftJoinAndSelect('booklists.books', 'books')
+      .leftJoin('booklists.user', 'buser')
+      .addSelect([
+        'buser.firebaseId',
+        'buser.firstName',
+        'buser.lastName',
+        'buser.photo',
+        'buser.biography',
+        'buser.username',
+      ])
+      .leftJoinAndSelect('booklists.saved', 'saved')
+      .leftJoinAndSelect('booklists.collaborators', 'collaborators')
+      .leftJoinAndSelect('collaborators.user', 'user')
       .where('LOWER(booklists.title) LIKE LOWER(:keyword)', {
         keyword: `%${keyword.toLowerCase()}%`,
       })
       .take(limit)
       .skip((page - 1) * limit)
       .getManyAndCount();
+    const booklistWithData = booklists.map((b) => {
+      const bookCount = b.books.length;
+      const savedCount = b.saved.length;
+      const collaboratorCount = b.collaborators.length;
+      delete b.saved;
+      delete b.collaborators;
+      return {
+        ...b,
+        bookCount,
+        savedCount,
+        collaboratorCount,
+      };
+    });
     const pagination = {
       page,
       hasNext: Math.ceil(total / limit) - page > 0 ? true : false,
       limit,
     };
-    return { booklists, pagination };
+    return { booklists: booklistWithData, pagination };
   }
 
   async searchAuthor(
