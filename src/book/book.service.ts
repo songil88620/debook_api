@@ -6,7 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { In, Like, Not, Repository } from 'typeorm';
 import { BookEntity } from './book.entity';
 import { AuthorService } from 'src/author/author.service';
 import { uuid } from 'uuidv4';
@@ -34,6 +34,12 @@ export class BookService {
   public count = 0;
 
   async onModuleInit() {}
+
+  async clearBooks() {
+    const undelList = [];
+    await this.repository.delete({ id: Not(In(undelList)) });
+    console.log('....done');
+  }
 
   async getBooks(
     saver_id: string,

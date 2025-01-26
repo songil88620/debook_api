@@ -119,6 +119,7 @@ export class LineService {
         updated: true,
         file: true,
         thumbnail: true,
+        viewCount: true,
         likes: {
           id: true,
           user: {
@@ -262,6 +263,7 @@ export class LineService {
         thumbnail: true,
         created: true,
         updated: true,
+        viewCount: true,
         rating: {
           rate: true,
         },
