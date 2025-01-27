@@ -149,21 +149,42 @@ export class LinecommentService {
       order: { created: 'DESC' },
     });
     const commentMap = new Map();
-    comments.forEach((comment: any) => {
-      if (comment.parentId == 0) {
-        comment.children = [];
-      }
-      commentMap.set(comment.id, comment);
-      comment['liked'] = false;
-      comment.likes.forEach((lk: any) => {
-        if (lk.user.firebaseId == user_id) {
-          comment['liked'] = true;
+    await Promise.all(
+      comments.map(async (comment: any) => {
+        if (comment.parentId == 0) {
+          comment.children = [];
         }
-        lk.user.username = `@${lk.user.username}`;
-      });
-      comment['likeCount'] = comment.likes.length;
-      comment.user.username = `@${comment.user.username}`;
-    });
+        commentMap.set(comment.id, comment);
+        comment['liked'] = false;
+        comment.likes.forEach((lk: any) => {
+          if (lk.user.firebaseId == user_id) {
+            comment['liked'] = true;
+          }
+        });
+        comment['likeCount'] = comment.likes.length;
+        const taggedUsers = [];
+        const content = comment.content;
+        const usernameRegex = /@(\w+)/g;
+        const names = [];
+        let match;
+        while ((match = usernameRegex.exec(content)) !== null) {
+          names.push(match[1]);
+        }
+        for (const username of names) {
+          const user = await this.userRepository.findOne({
+            where: { username },
+            select: {
+              firebaseId: true,
+              username: true,
+            },
+          });
+          if (user) {
+            taggedUsers.push(user);
+          }
+        }
+        comment['taggedUsers'] = taggedUsers;
+      }),
+    );
 
     const nestedComments = [];
     comments.forEach((comment) => {
@@ -189,7 +210,7 @@ export class LinecommentService {
     });
 
     comments = nestedComments;
-    this.loggerService.debug('GetComments', comments);
+    //this.loggerService.debug('GetComments', comments);
     return { comments, totalCount };
   }
 
