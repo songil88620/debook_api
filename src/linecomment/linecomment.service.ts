@@ -159,8 +159,10 @@ export class LinecommentService {
         if (lk.user.firebaseId == user_id) {
           comment['liked'] = true;
         }
+        lk.user.username = `@${lk.user.username}`;
       });
       comment['likeCount'] = comment.likes.length;
+      comment.user.username = `@${comment.user.username}`;
     });
 
     const nestedComments = [];
