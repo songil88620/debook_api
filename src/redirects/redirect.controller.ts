@@ -17,6 +17,8 @@ export class RedirectController {
       res.redirect(`${this.url}/book/${id}`);
     } else if (type === 'profile') {
       res.redirect(`${this.url}/(tabs)/profile/${id}`);
+    } else if (type === 'line') {
+      res.redirect(`${this.url}/(tabs)/lines?lineId=${id}`);
     } else {
       res.redirect(`${this.url}/(tabs)/feed`);
     }
