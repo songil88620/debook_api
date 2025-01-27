@@ -52,6 +52,9 @@ export class LineEntity {
   @Column({ default: 0 })
   viewCount: number;
 
+  @Column({ default: 0 })
+  sharedCount: number;
+
   @CreateDateColumn({ type: 'timestamp' })
   created: Date;
 

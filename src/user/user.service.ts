@@ -278,6 +278,7 @@ export class UserService {
           file: true,
           thumbnail: true,
           viewCount: true,
+          sharedCount: true,
           created: true,
           updated: true,
           rating: {

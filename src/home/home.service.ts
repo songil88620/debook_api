@@ -309,6 +309,7 @@ export class HomeService {
           thumbnail: true,
           type: true,
           viewCount: true,
+          sharedCount: true,
         },
       },
     });

@@ -120,6 +120,7 @@ export class LineService {
         file: true,
         thumbnail: true,
         viewCount: true,
+        sharedCount: true,
         likes: {
           id: true,
           user: {
@@ -264,6 +265,7 @@ export class LineService {
         created: true,
         updated: true,
         viewCount: true,
+        sharedCount: true,
         rating: {
           rate: true,
         },
@@ -387,5 +389,17 @@ export class LineService {
 
   async likeOrUnlike(user_id: string, line_id: number) {
     await this.likeService.likeOrUnlike(user_id, line_id, LIKE_TYPE.LINE);
+  }
+
+  async increaseSharedCount(line_id: number) {
+    const line = await this.repository.findOne({ where: { id: line_id } });
+    if (!line) {
+      throw new Error(`Line with id ${line_id} not found`);
+    }
+    const newSharedCount = line.sharedCount + 1;
+    await this.repository.update(
+      { id: line_id },
+      { sharedCount: newSharedCount },
+    );
   }
 }
