@@ -9,10 +9,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsGeneralString } from 'src/validators/validator.string';
 
 export class BooklistCreateDto {
-  @ApiProperty({ description: 'title', minLength: 5, maxLength: 100 })
+  @ApiProperty({ description: 'title', minLength: 1, maxLength: 100 })
   @IsGeneralString()
   @IsOptional()
-  @Length(5, 100)
+  @Length(1, 100)
   title?: string;
 
   @ApiProperty({ description: 'book_ids' })
@@ -27,11 +27,11 @@ export class BooklistCreateDto {
 }
 
 export class BooklistUpdateDto {
-  @ApiProperty({ description: 'title', minLength: 5, maxLength: 100 })
+  @ApiProperty({ description: 'title', minLength: 1, maxLength: 100 })
   @IsGeneralString()
   @IsOptional()
-  @Length(5, 100, {
-    message: 'title must be exactly 5~100 characters long',
+  @Length(1, 100, {
+    message: 'title must be exactly 1~100 characters long',
   })
   title?: string;
 
