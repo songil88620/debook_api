@@ -62,6 +62,7 @@ export class NotificationService {
         status: NOTI_STATUS_TYPE.PENDING,
       },
       relations: ['notifier'],
+      order: { created: 'DESC' },
     });
     if (notifys) {
       const notifications = notifys.map((n) => {
