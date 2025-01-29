@@ -52,8 +52,8 @@ export class LineController {
         (file) => file.fieldname === 'thumbnail',
       );
 
-      if (!videoFile.mimetype.match(/video\/(mp4)/)) {
-        throw new BadRequestException('Video file must be of type MP4.');
+      if (!videoFile.mimetype.match(/video\/(mp4|quicktime)/)) {
+        throw new BadRequestException('Video file must be of type MP4 or MOV.');
       }
       if (!thumbnailFile.mimetype.match(/image\/(jpeg|png)/)) {
         throw new BadRequestException('Image file must be JPEG or PNG.');

@@ -18,7 +18,12 @@ export function IsGeneralString(validationOptions?: ValidationOptions) {
             return false;
           }
 
-          const isValid = /^[a-zA-Z0-9 .,!?'"@-]*$/.test(value);
+          // const isValid = /^[a-zA-Z0-9 .,!?'"@-]*$/.test(value);
+          const isValid =
+            /^[a-zA-Z0-9 .,!?'"@-⭑✿💥🎉🧑‍💻\p{S}\p{P}\p{L}\p{N}\p{Emoji}\s]*$/gu.test(
+              value,
+            );
+
           // const isSafeFromSqlInjection =
           //   !/(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|--|;|'|"|\\)\b)/i.test(
           //     value,
