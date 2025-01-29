@@ -204,6 +204,7 @@ export class UserService {
         .where('booklists.user = :userId', { userId: id })
         .orWhere('user.firebaseId = :userId', { userId: id })
         .orWhere('saved.firebaseId = :userId', { userId: id })
+        .orderBy('booklists.updated', 'DESC')
         .getMany(),
     ]);
 
