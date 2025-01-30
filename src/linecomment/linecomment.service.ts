@@ -81,11 +81,25 @@ export class LinecommentService {
       }),
     ]);
     if (user && line && parent) {
+      // check tree deep level
+      let pid = parent_id;
+      if (parent.parentId == 0) {
+        pid = parent_id;
+      } else {
+        const gParent = await this.repository.findOne({
+          where: { id: parent.parentId },
+        });
+        if (gParent.parentId == 0) {
+          pid = parent_id;
+        } else {
+          pid = gParent.id;
+        }
+      }
       const new_comment = {
         line,
         user,
         content,
-        parentId: parent_id,
+        parentId: pid,
       };
       const c = this.repository.create(new_comment);
       const comment = await this.repository.save(c);
@@ -242,19 +256,9 @@ export class LinecommentService {
             id: true,
           },
         });
-        await Promise.all([
-          // delete children replies
-          this.repository.delete({
-            parentId: In(replyIds),
-            line: { id: line_id },
-          }),
-          // delete replies
-          this.repository.delete({
-            id: In(replyIds),
-            line: { id: line_id },
-          }),
-        ]);
         const secReplyIds = secReplies.map((reply) => reply.id);
+        const delIds = [...replyIds, ...secReplyIds];
+        await this.repository.delete({ id: In(delIds), line: { id: line_id } });
         const removeNotificationList = [
           ...replyIds.map((r) => 'c_' + r),
           ...secReplyIds.map((r) => 'c_' + r),

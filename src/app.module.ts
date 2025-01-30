@@ -80,6 +80,7 @@ import { MagickeyModule } from './magickey/magickey.module';
       //   type: 'redis',
       //   duration: 60000,
       // },
+      charset: 'utf8mb4',
     }),
     ScheduleModule.forRoot(),
     RedirectModule,

@@ -30,7 +30,8 @@ export class LineEntity {
   @OneToMany(() => LinecommentEntity, (comments) => comments.line)
   comments: LinecommentEntity[];
 
-  @Column({ type: 'varchar', default: '', length: 150 })
+  // @Column({ type: 'varchar', default: '', length: 150 })
+  @Column({ type: 'text', default: null, nullable: true })
   description: string;
 
   @Column({ type: 'text', default: null, nullable: true })
