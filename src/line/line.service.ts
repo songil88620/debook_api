@@ -7,7 +7,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { UserEntity } from 'src/user/user.entity';
 import { LineEntity } from './line.entity';
 import { LineCreateDto } from './dtos';
@@ -19,6 +19,7 @@ import { LoggerService } from 'src/logger/logger.service';
 import { RatingEntity } from 'src/rating/rating.entity';
 import axios from 'axios';
 import { NotificationEntity } from 'src/notification/notification.entity';
+import { LinecommentService } from 'src/linecomment/linecomment.service';
 
 @Injectable()
 export class LineService {
@@ -38,6 +39,8 @@ export class LineService {
     private achievementService: AchievementService,
     @Inject(forwardRef(() => LikeService))
     private likeService: LikeService,
+    @Inject(forwardRef(() => LinecommentService))
+    private linecommentService: LinecommentService,
     @Inject(forwardRef(() => LoggerService))
     private loggerService: LoggerService,
   ) {}
@@ -371,9 +374,10 @@ export class LineService {
     });
     if (line) {
       await this.repository.delete({ id: line_id });
+      await this.linecommentService.deleteCommentOfLine(line_id);
       const query = `"lineId":"${line_id}"`;
       this.notificationRepository.delete({
-        extra: Like(`%${query}%`),
+        extra: ILike(`%${query}%`),
       });
 
       // const file = line.file;

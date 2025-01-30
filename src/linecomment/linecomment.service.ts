@@ -52,7 +52,7 @@ export class LinecommentService {
       const extra = {
         commentId: comment.id,
         content: content,
-        lindId: line_id,
+        lineId: line_id,
       };
       this.notifyToMentionedUser(content, user_id, extra, comment.id);
       return { comment };
@@ -106,7 +106,7 @@ export class LinecommentService {
       const extra = {
         commentId: comment.id,
         content: content,
-        lindId: line_id,
+        lineId: line_id,
       };
       this.notificationService.createNotification(
         user_id,
@@ -321,5 +321,9 @@ export class LinecommentService {
         );
       }
     }
+  }
+
+  async deleteCommentOfLine(line_id: number) {
+    await this.repository.delete({ line: { id: line_id } });
   }
 }
