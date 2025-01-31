@@ -10,6 +10,7 @@ import { LikeEntity } from 'src/like/like.entity';
 import { LineEntity } from 'src/line/line.entity';
 import { LinecommentEntity } from 'src/linecomment/linecomment.entity';
 import { NotificationEntity } from 'src/notification/notification.entity';
+// import { ViewhistoryEntity } from 'src/viewhistory/viewhistory.entity';
 import {
   Entity,
   Column,
@@ -139,6 +140,10 @@ export class UserEntity {
   @JoinTable()
   @OneToMany(() => LikeEntity, (liker) => liker.user)
   liker: LikeEntity[];
+
+  // @JoinTable()
+  // @OneToMany(() => ViewhistoryEntity, (liker) => liker.user)
+  // viewer: ViewhistoryEntity[];
 
   @JoinTable()
   @OneToMany(() => BooklistEntity, (booklist) => booklist.user)

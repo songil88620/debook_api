@@ -90,6 +90,30 @@ export class LineController {
     }
   }
 
+  @Post(':lineId/count')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiResponse({
+    status: 201,
+    description: 'Increase view count',
+    schema: {
+      example: {},
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Line not found or limit to update',
+    schema: {
+      example: {
+        error: {
+          code: 'FORBIDDEN',
+        },
+      },
+    },
+  })
+  async increaseViewCount(@User() user: any, @Param('lineId') lineId: number) {
+    await this.lineService.increaseViewCount(user.uid, lineId);
+  }
+
   @Post(':lineId/like')
   @UseGuards(FirebaseAuthGuard)
   @ApiResponse({

@@ -13,6 +13,7 @@ import { RatingEntity } from 'src/rating/rating.entity';
 import { UploadModule } from 'src/upload/upload.module';
 import { LinecommentModule } from 'src/linecomment/linecomment.module';
 import { NotificationEntity } from 'src/notification/notification.entity';
+import { ViewhistoryEntity } from 'src/viewhistory/viewhistory.entity';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { NotificationEntity } from 'src/notification/notification.entity';
       BookEntity,
       RatingEntity,
       NotificationEntity,
+      ViewhistoryEntity,
     ]),
     forwardRef(() => AuthModule),
     forwardRef(() => AchievementModule),

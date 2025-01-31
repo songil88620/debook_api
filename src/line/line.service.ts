@@ -13,13 +13,14 @@ import { LineEntity } from './line.entity';
 import { LineCreateDto } from './dtos';
 import { BookEntity } from 'src/book/book.entity';
 import { AchievementService } from 'src/achievement/achievement.service';
-import { ACHIEVE_TYPE, LIKE_TYPE } from 'src/enum';
+import { ACHIEVE_TYPE, LIKE_TYPE, VIEW_TYPE } from 'src/enum';
 import { LikeService } from 'src/like/like.service';
 import { LoggerService } from 'src/logger/logger.service';
 import { RatingEntity } from 'src/rating/rating.entity';
 import axios from 'axios';
 import { NotificationEntity } from 'src/notification/notification.entity';
 import { LinecommentService } from 'src/linecomment/linecomment.service';
+import { ViewhistoryEntity } from 'src/viewhistory/viewhistory.entity';
 
 @Injectable()
 export class LineService {
@@ -35,6 +36,8 @@ export class LineService {
     private bookRepository: Repository<BookEntity>,
     @InjectRepository(NotificationEntity)
     private notificationRepository: Repository<NotificationEntity>,
+    @InjectRepository(ViewhistoryEntity)
+    private viewhistoryRepository: Repository<ViewhistoryEntity>,
     @Inject(forwardRef(() => AchievementService))
     private achievementService: AchievementService,
     @Inject(forwardRef(() => LikeService))
@@ -398,12 +401,76 @@ export class LineService {
   async increaseSharedCount(line_id: number) {
     const line = await this.repository.findOne({ where: { id: line_id } });
     if (!line) {
-      throw new Error(`Line with id ${line_id} not found`);
+      throw new HttpException(
+        { error: { code: 'FORBIDDEN' } },
+        HttpStatus.FORBIDDEN,
+      );
     }
     const newSharedCount = line.sharedCount + 1;
     await this.repository.update(
       { id: line_id },
       { sharedCount: newSharedCount },
     );
+  }
+
+  async increaseViewCount(user_id: string, line_id: number) {
+    const [line, lastView] = await Promise.all([
+      this.repository.findOne({ where: { id: line_id } }),
+      this.viewhistoryRepository.findOne({
+        where: {
+          userId: user_id,
+          type: VIEW_TYPE.LINE,
+          viewId: line_id,
+        },
+      }),
+    ]);
+    if (line) {
+      if (lastView) {
+        const now = new Date();
+        const oneDayAgo = new Date(lastView.updated);
+        oneDayAgo.setDate(oneDayAgo.getDate() + 1);
+        if (now > oneDayAgo) {
+          await Promise.all([
+            this.viewhistoryRepository.update(
+              {
+                userId: user_id,
+                type: VIEW_TYPE.LINE,
+                viewId: line_id,
+              },
+              { lastView: now },
+            ),
+            this.repository.update(
+              { id: line_id },
+              { viewCount: line.viewCount + 1 },
+            ),
+          ]);
+        } else {
+          throw new HttpException(
+            { error: { code: 'FORBIDDEN' } },
+            HttpStatus.FORBIDDEN,
+          );
+        }
+      } else {
+        const new_view = {
+          userId: user_id,
+          type: VIEW_TYPE.LINE,
+          viewId: line_id,
+          lastView: new Date(),
+        };
+        const c = this.viewhistoryRepository.create(new_view);
+        await Promise.all([
+          this.viewhistoryRepository.save(c),
+          this.repository.update(
+            { id: line_id },
+            { viewCount: line.viewCount + 1 },
+          ),
+        ]);
+      }
+    } else {
+      throw new HttpException(
+        { error: { code: 'FORBIDDEN' } },
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 }

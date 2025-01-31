@@ -61,3 +61,9 @@ export enum RATING_TYPE {
   BOOK = 'book',
   BOOKLIST = 'booklist',
 }
+
+export enum VIEW_TYPE {
+  NONE = 'none',
+  BOOK = 'book',
+  LINE = 'line',
+}

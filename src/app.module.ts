@@ -46,6 +46,8 @@ import { RatingEntity } from './rating/rating.entity';
 import { RatingModule } from './rating/rating.module';
 import { RedirectModule } from 'src/redirects/redirect.module';
 import { MagickeyModule } from './magickey/magickey.module';
+import { ViewhistoryEntity } from './viewhistory/viewhistory.entity';
+import { ViewhistoryModule } from './viewhistory/viewhistory.module';
 
 @Module({
   imports: [
@@ -72,6 +74,7 @@ import { MagickeyModule } from './magickey/magickey.module';
         LinecommentEntity,
         LikeEntity,
         RatingEntity,
+        ViewhistoryEntity,
       ],
       username: process.env.DB_USER,
       password: process.env.DB_PW,
@@ -106,6 +109,7 @@ import { MagickeyModule } from './magickey/magickey.module';
     RatingModule,
     LoggerModule,
     MagickeyModule,
+    ViewhistoryModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60,
