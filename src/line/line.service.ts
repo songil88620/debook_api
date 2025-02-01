@@ -17,6 +17,7 @@ import { ACHIEVE_TYPE, LIKE_TYPE, VIEW_TYPE } from 'src/enum';
 import { LikeService } from 'src/like/like.service';
 import { LoggerService } from 'src/logger/logger.service';
 import { RatingEntity } from 'src/rating/rating.entity';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import axios from 'axios';
 import { NotificationEntity } from 'src/notification/notification.entity';
 import { LinecommentService } from 'src/linecomment/linecomment.service';
@@ -48,6 +49,7 @@ export class LineService {
     private loggerService: LoggerService,
   ) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async createLine(user_id: string, data: LineCreateDto, inPath: string) {
     const [user, book] = await Promise.all([
       this.userRepository.findOne({
@@ -90,14 +92,14 @@ export class LineService {
 
     // compress uploaded video by calling this compressor
     // no need to wait
-    try {
-      axios.post(this.compressorUrl, {
-        inPath: `debook-user-data/${inPath}`,
-        outPath: inPath,
-      });
-    } catch (error) {
-      this.loggerService.error('Compressor Error', error.message);
-    }
+    // try {
+    //   axios.post(this.compressorUrl, {
+    //     inPath: `debook-user-data/${inPath}`,
+    //     outPath: inPath,
+    //   });
+    // } catch (error) {
+    //   this.loggerService.error('Compressor Error', error.message);
+    // }
     return { line };
   }
 

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { UserCreateDto } from './dtos';
 import { InvitationService } from 'src/invitation/invitation.service';
 import { UploadService } from 'src/upload/upload.service';
@@ -409,5 +409,19 @@ export class UserService {
     return {
       user,
     };
+  }
+
+  async checkEmailUnique(user_id: string, email: string) {
+    const user = await this.userRepository.findOne({
+      where: { firebaseId: Not(user_id), email },
+    });
+    return !user;
+  }
+
+  async checkUsernameUnique(user_id: string, username: string) {
+    const user = await this.userRepository.findOne({
+      where: { firebaseId: Not(user_id), username },
+    });
+    return !user;
   }
 }

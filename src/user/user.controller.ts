@@ -127,6 +127,17 @@ export class UserController {
       },
     },
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Email or username are already used.',
+    schema: {
+      example: {
+        error: {
+          code: 'BAD_REQUEST',
+        },
+      },
+    },
+  })
   @UseGuards(FirebaseAuthGuard)
   @UseInterceptors(FileInterceptor('photo'))
   async updateUser(
@@ -145,36 +156,49 @@ export class UserController {
     @User() user: any,
     @Body() updateUserDto: UserUpdateDto,
   ) {
-    try {
-      const uid = user.uid;
-      if (id != uid) {
-        throw new HttpException(
-          { error: { code: 'FORBIDDEN' } },
-          HttpStatus.FORBIDDEN,
-        );
-      }
-      if (file) {
-        const file_name = uid + '.' + Date.now();
-        const res = await this.uploadService.saveFileOnS3(
-          file,
-          'avatar',
-          file_name,
-        );
-        if (res.status) {
-          updateUserDto.photo = res.file_url;
-        } else {
-          throw new HttpException(
-            { error: { code: 'FORBIDDEN' } },
-            HttpStatus.FORBIDDEN,
-          );
-        }
-      }
-      return await this.userService.update(uid, updateUserDto);
-    } catch (e) {
+    const uid = user.uid;
+    if (id != uid) {
       throw new HttpException(
         { error: { code: 'FORBIDDEN' } },
         HttpStatus.FORBIDDEN,
       );
     }
+    const [valid_username, valid_email] = await Promise.all([
+      this.userService.checkUsernameUnique(uid, updateUserDto.username),
+      this.userService.checkEmailUnique(uid, updateUserDto.email),
+    ]);
+    if (!(valid_email && valid_username)) {
+      if (!valid_email) {
+        throw new HttpException(
+          { error: { code: 'BAD_REQUEST', message: 'email already exist' } },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (!valid_username) {
+        throw new HttpException(
+          {
+            error: { code: 'BAD_REQUEST', message: 'username already exist' },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+    if (file) {
+      const file_name = uid + '.' + Date.now();
+      const res = await this.uploadService.saveFileOnS3(
+        file,
+        'avatar',
+        file_name,
+      );
+      if (res.status) {
+        updateUserDto.photo = res.file_url;
+      } else {
+        throw new HttpException(
+          { error: { code: 'FORBIDDEN' } },
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
+    return await this.userService.update(uid, updateUserDto);
   }
 }
