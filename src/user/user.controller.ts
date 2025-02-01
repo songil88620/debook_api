@@ -170,14 +170,24 @@ export class UserController {
     if (!(valid_email && valid_username)) {
       if (!valid_email) {
         throw new HttpException(
-          { error: { code: 'BAD_REQUEST', message: 'email already exist' } },
+          {
+            error: {
+              code: 'BAD_REQUEST',
+              errorCode: 1,
+              message: 'This email is already in use',
+            },
+          },
           HttpStatus.BAD_REQUEST,
         );
       }
       if (!valid_username) {
         throw new HttpException(
           {
-            error: { code: 'BAD_REQUEST', message: 'username already exist' },
+            error: {
+              code: 'BAD_REQUEST',
+              errorCode: 2,
+              message: 'This username is already in use',
+            },
           },
           HttpStatus.BAD_REQUEST,
         );
