@@ -34,7 +34,13 @@ export class UserEntity {
   @Column({ type: 'text', nullable: true, default: null })
   biography: string;
 
-  @Column({ type: 'varchar', nullable: true, default: null, length: 100 })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    unique: true,
+    default: null,
+  })
   email: string;
 
   @Column({ type: 'varchar', nullable: true, default: null, length: 30 })
@@ -70,7 +76,13 @@ export class UserEntity {
   @Column({ type: 'varchar', default: 'user', length: 10 })
   role: string;
 
-  @Column({ type: 'varchar', nullable: true, default: null, length: 50 })
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    unique: true,
+    default: null,
+  })
   username: string;
 
   @Column({ type: 'varchar', default: '#000000', length: 9 })
